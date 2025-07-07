@@ -374,8 +374,8 @@ def render_team_dashboard(df, team_df, csv_path):
     filtered_df["ScoreDelta"] = filtered_df["curr_CompositeScore"] - filtered_df["proj_CompositeScore"]
 
     st.header("📊 Team Snapshot")
-    over = filtered_df.sort_values("ScoreDelta", ascending=False).head(5)
-    under = filtered_df.sort_values("ScoreDelta").head(5)
+    over  = filtered_df.sort_values("ScoreDelta", ascending=False)
+    under = filtered_df.sort_values("ScoreDelta")
     volatile = filtered_df.assign(volatility=filtered_df["ScoreDelta"].abs()).sort_values("volatility", ascending=False).head(5)
 
     col1, col2, col3 = st.columns(3)
@@ -422,7 +422,7 @@ def render_team_dashboard(df, team_df, csv_path):
             y="Avg Score",
             color="Type",
             barmode="group",
-            text_auto=".2f",
+            #text_auto=".2f",
             title="Projected vs Current Avg Score by Position"
         )
         fig_pos.update_layout(showlegend=True)
@@ -637,7 +637,6 @@ def render_league_dashboard(df):
             pos_summary,
             x="Team",
             y="Avg Score",
-            text_auto=".2f",
             color="Team",
             title=f"Dominance at Position {selected_pos}",
         )

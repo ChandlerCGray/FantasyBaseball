@@ -1,0 +1,22 @@
+# Ignore Python Virtual Environment
+.venv/
+venv/
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore sensitive data
+.env
+
+# Ignore Kiro IDE files
+.kiro/
+.kiro/**/*
+
+# Ignore generated files
+output/
+*.csv
+*.log
+*.xlsx
+Start-TeamAnalyzer.ps1

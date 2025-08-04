@@ -1,0 +1,3 @@
+#!/bin/bash
+# Fantasy Baseball Hub - Cross-platform launcher
+python3 app.py 

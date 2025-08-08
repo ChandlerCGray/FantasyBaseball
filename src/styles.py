@@ -28,6 +28,37 @@ def get_custom_css():
         visibility: visible !important;
     }}
     
+    /* Ensure sidebar is accessible on mobile */
+    @media (max-width: 768px) {{
+        .css-1d391kg {{
+            display: block !important;
+            visibility: visible !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }}
+        
+        /* Make sidebar content more mobile-friendly */
+        .css-1d391kg .stSelectbox {{
+            font-size: 16px;
+            min-height: 44px;
+        }}
+        
+        .css-1d391kg .stButton > button {{
+            min-height: 44px;
+            font-size: 16px;
+            margin: 0.5rem 0;
+        }}
+        
+        .css-1d391kg .stCheckbox {{
+            font-size: 16px;
+            min-height: 44px;
+        }}
+        
+        .css-1d391kg .stSlider {{
+            margin: 1rem 0;
+        }}
+    }}
+    
     /* Mobile-specific styling */
     @media (max-width: 768px) {{
         .main .block-container {{

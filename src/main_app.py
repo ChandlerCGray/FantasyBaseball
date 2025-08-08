@@ -47,58 +47,6 @@ def main():
     st.markdown("# Fantasy Baseball Dashboard")
     st.markdown("---")
     
-    # Mobile-friendly navigation and controls
-    # Mobile navigation - always visible
-    st.markdown("### Navigation")
-    pages = [
-        ("Add/Drop Recommendations", "Add/Drop Recommendations"),
-        ("Best Free Agents", "Best Free Agents"),
-        ("Drop Candidates", "Drop Candidates"),
-        ("Team Analysis", "Team Analysis"),
-        ("Player Comparison", "Player Comparison"),
-        ("Draft Strategy", "Draft Strategy"),
-        ("Waiver Trends", "Waiver Trends"),
-        ("League Analysis", "League Analysis")
-    ]
-    
-    # Create mobile navigation buttons in 2 columns
-    cols = st.columns(2)
-    for i, (page_display, page_key) in enumerate(pages):
-        col = cols[i % 2]
-        if col.button(
-            page_display,
-            key=f"mobile_nav_{page_key}",
-            use_container_width=True,
-            type="primary" if st.session_state.current_page == page_key else "secondary"
-        ):
-            st.session_state.current_page = page_key
-            st.rerun()
-    
-    # Mobile controls section
-    with st.expander("Mobile Controls", expanded=False):
-        # Team selection
-        df, csv_path = load_data()
-        teams = sorted([t for t in df["fantasy_team"].dropna().unique() 
-                       if t.lower() not in ["free agent", "fa"]])
-        
-        selected_team = st.selectbox(
-            "Select Your Team",
-            teams,
-            index=teams.index(DEFAULT_TEAM) if DEFAULT_TEAM in teams else 0,
-            key="mobile_team_select"
-        )
-        
-        # Filters
-        hide_injured = st.checkbox("Hide Injured Players", value=True, key="mobile_hide_injured")
-        min_proj_score = st.slider("Min Projected Score", -3.0, 3.0, -1.0, 0.1, key="mobile_min_score")
-        
-        # Data update button
-        if st.button("Update Data", use_container_width=True):
-            run_data_update()
-            st.success("Data updated!")
-    
-    st.markdown("---")
-    
 
     
     # Sidebar controls
@@ -111,21 +59,16 @@ def main():
         teams = sorted([t for t in df["fantasy_team"].dropna().unique() 
                        if t.lower() not in ["free agent", "fa"]])
         
-        # Use mobile values from the expander
-        mobile_team = st.session_state.get("mobile_team_select", DEFAULT_TEAM)
-        mobile_hide_injured = st.session_state.get("mobile_hide_injured", True)
-        mobile_min_score = st.session_state.get("mobile_min_score", -1.0)
-        
         selected_team = st.selectbox(
             "Select Your Team",
             teams,
-            index=teams.index(mobile_team) if mobile_team in teams else 0
+            index=teams.index(DEFAULT_TEAM) if DEFAULT_TEAM in teams else 0
         )
         
         # Filters
         st.markdown("### Filters")
-        hide_injured = st.checkbox("Hide Injured Players", value=mobile_hide_injured)
-        min_proj_score = st.slider("Min Projected Score", -3.0, 3.0, mobile_min_score, 0.1)
+        hide_injured = st.checkbox("Hide Injured Players", value=True)
+        min_proj_score = st.slider("Min Projected Score", -3.0, 3.0, -1.0, 0.1)
         
         # Navigation menu
         st.markdown("### Navigation")

@@ -12,7 +12,10 @@ from config import PITCHER_ROLES, HITTER_ROLES, POSITION_VARIATIONS
 
 def get_newest_csv(folder="./output", pattern="free_agents_ranked_*.csv"):
     """Get the most recent CSV file"""
-    files = glob.glob(os.path.join(folder, pattern))
+    # Get the absolute path to the project root
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    folder_path = os.path.join(project_root, folder)
+    files = glob.glob(os.path.join(folder_path, pattern))
     return max(files, key=os.path.getmtime) if files else None
 
 def expand_positions(pos_str):

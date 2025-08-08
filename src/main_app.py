@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
     from config import PAGE_CONFIG, DEFAULT_TEAM, COLORS
     from styles import get_custom_css, get_hero_section
-    from data_utils import load_data, run_data_update
+    from data_utils import load_data
     from ui_components import create_metric_tile
     from app_pages.add_drop_recommendations import show_add_drop_recommendations
     from app_pages.best_free_agents import show_best_free_agents
@@ -52,7 +52,28 @@ def main():
     # Sidebar controls
     with st.sidebar:
         st.markdown("### Controls")
-        run_data_update()
+        
+        # Data update button
+        if st.button("🔄 Update Data", help="Fetch latest data from ESPN and FanGraphs", use_container_width=True):
+            with st.spinner("Updating data..."):
+                try:
+                    import subprocess
+                    import sys
+                    result = subprocess.run(
+                        [sys.executable, "./src/main.py"],
+                        check=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        cwd="."
+                    )
+                    st.success("✅ Data updated successfully!")
+                    st.rerun()
+                except subprocess.CalledProcessError as e:
+                    st.error("❌ Update failed")
+                    st.code(e.stderr or "No error output")
+        
+        st.markdown("---")
         
         # Team selection
         df, csv_path = load_data()

@@ -67,19 +67,20 @@ mkdir -p output
 
 ### 8. Launch the Application
 
-#### Option A: Use Startup Script (Recommended)
+#### Option A: FastAPI (Recommended)
+```bash
+source venv/bin/activate
+uvicorn src.server.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+#### Option B: Helper Script
 ```bash
 ./start
 ```
 
-#### Option B: Manual Launch
-```bash
-python app.py
-```
-
 The app will be available at:
-- **Local**: http://localhost:8501
-- **Network**: http://your-ip:8501
+- **Local**: http://localhost:8000
+- **Network**: http://your-ip:8000
 
 ## Troubleshooting
 

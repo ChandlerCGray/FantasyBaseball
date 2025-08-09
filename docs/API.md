@@ -4,14 +4,22 @@ This document provides an overview of the key modules and functions in the Fanta
 
 ## Core Modules
 
-### `src/main_app.py`
-The main Streamlit application entry point.
+### `src/server/main.py`
+FastAPI application and routes for the server-rendered UI.
 
-**Key Functions:**
-- `main()` - Main application function that sets up the UI and navigation
+**Key Routes:**
+- `GET /` Add/Drop (with Free Agents section)
+- `POST /update` Trigger data refresh
+- `GET /drop-candidates`
+- `GET /team`
+- `GET /compare`
+- `GET /league`
+- `GET /league/team` Team breakdown (hitters/pitchers averages)
+- `GET /players`
+- `GET /player`
 
 ### `src/config.py`
-Configuration constants and settings.
+Configuration constants and settings (legacy Streamlit config still present, unused in FastAPI UI).
 
 **Key Variables:**
 - `PAGE_CONFIG` - Streamlit page configuration

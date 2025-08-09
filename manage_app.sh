@@ -59,8 +59,8 @@ case "$1" in
         echo "  disable - Disable auto-start on boot"
         echo ""
         echo "App URLs:"
-        echo "  Local:  http://localhost:8501"
-        echo "  Network: http://192.168.0.46:8501"
+        echo "  Local:   http://localhost:8000"
+        echo "  Network: http://<your-ip>:8000"
         exit 1
         ;;
 esac

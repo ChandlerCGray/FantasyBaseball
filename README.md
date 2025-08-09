@@ -23,16 +23,17 @@ A comprehensive, interactive fantasy baseball analysis platform that combines ES
 
 3. **Launch the application**
    ```bash
-   # Cross-platform launcher
+   # FastAPI (recommended)
+   source venv/bin/activate
+   uvicorn src.server.main:app --host 0.0.0.0 --port 8000
+
+   # Or via helper
    ./start
-   
-   # Or manually
-   python app.py
    ```
 
 4. **Access the application**
-   - Local: http://localhost:8501
-   - Network: http://your-ip:8501
+   - Local: http://localhost:8000
+   - Network: http://your-ip:8000
 
 **For detailed setup instructions, see [docs/SETUP.md](docs/SETUP.md)**
 
@@ -55,14 +56,14 @@ A comprehensive, interactive fantasy baseball analysis platform that combines ES
 - **Real-time Updates** - Immediate visual feedback and summary statistics
 
 ### Modern UI/UX
-- **Rainbow Tile System** - Beautiful, color-coded interface with consistent design language
-- **Mobile Optimized** - Responsive design that works perfectly on all devices
-- **Professional Styling** - Clean interface with proper contrast and accessibility
-- **Interactive Components** - Collapsible sections, expandable cards, and intuitive navigation
+- **Dark IDE Theme** - Muted, per-page accents; no emojis
+- **Mobile Optimized** - Off-canvas Filters sidebar with icon toggle
+- **Professional Styling** - Clean typography, compact cards, gradient stat indicators
+- **Interactive Components** - Sortable tables, drill-down links, compare flows
 
 ## Technology Stack
 
-- **Frontend**: Streamlit (Python web framework)
+- **Frontend**: FastAPI + Jinja2 (server-rendered UI)
 - **Data Processing**: Pandas, NumPy
 - **APIs**: ESPN Fantasy Baseball API, FanGraphs API
 - **Visualization**: Plotly, Custom CSS
@@ -82,7 +83,8 @@ FantasyBaseball/
 │   │   ├── draft_strategy.py
 │   │   ├── waiver_trends.py
 │   │   └── league_analysis.py
-│   ├── main_app.py        # Main Streamlit application
+│   ├── server/
+│   │   └── main.py        # FastAPI app and routes
 │   ├── config.py          # Configuration constants
 │   ├── data_utils.py      # Data loading utilities
 │   ├── espn_data.py       # ESPN API integration
@@ -179,7 +181,8 @@ This project is built for fantasy baseball enthusiasts who love data-driven deci
 ## Documentation
 
 - **[Setup Guide](docs/SETUP.md)** - Detailed installation and configuration
-- **[API Documentation](docs/API.md)** - Developer reference for modules and functions
+- **[Production Setup](PRODUCTION_SETUP.md)** - 24/7 service, monitoring, and management
+- **[API Documentation](docs/API.md)** - Developer reference
 
 ## License
 

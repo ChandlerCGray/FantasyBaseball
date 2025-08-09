@@ -12,9 +12,8 @@ Your Fantasy Baseball Hub is now configured to run 24/7 with automatic monitorin
 
 ## 📍 Access URLs
 
-- **Local**: http://localhost:8501
-- **Network**: http://192.168.0.46:8501
-- **External**: http://47.41.83.158:8501
+- **Local**: http://localhost:8000
+- **Network**: http://<your-ip>:8000
 
 ## 🛠️ Management Commands
 
@@ -23,7 +22,7 @@ Your Fantasy Baseball Hub is now configured to run 24/7 with automatic monitorin
 # Check status
 ./manage_app.sh status
 
-# View logs
+# View logs (service)
 ./manage_app.sh logs
 
 # Restart app
@@ -47,7 +46,7 @@ sudo systemctl restart fantasy-baseball.service
 # Check status
 sudo systemctl status fantasy-baseball.service
 
-# View logs
+# View logs (service)
 sudo journalctl -u fantasy-baseball.service -f
 ```
 

@@ -50,6 +50,36 @@ sudo systemctl status fantasy-baseball.service
 sudo journalctl -u fantasy-baseball.service -f
 ```
 
+## 🧩 Systemd Service (FastAPI)
+
+Create `/etc/systemd/system/fantasy-baseball.service`:
+
+```ini
+[Unit]
+Description=Fantasy Baseball Hub (FastAPI)
+After=network.target
+
+[Service]
+Type=simple
+User=chandlergray
+WorkingDirectory=/home/chandlergray/FantasyBaseball
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/bin/bash -lc 'source venv/bin/activate && uvicorn src.server.main:app --host 0.0.0.0 --port 8000'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then enable and start:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable fantasy-baseball.service
+sudo systemctl start fantasy-baseball.service
+```
+
 ## 📊 Monitoring
 
 ### Health Check

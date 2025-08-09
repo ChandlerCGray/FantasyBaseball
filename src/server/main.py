@@ -138,6 +138,40 @@ def _league_team_breakdown(df: pd.DataFrame, team: str, hide_injured: bool):
     team_df = df[(df["fantasy_team"] == team) & (df["has_valid_position"])].copy()
     if team_df.empty:
         return {"hitters": [], "pitchers": []}
+    # Build qualified universe for normalization
+    playable = df[df.get("has_valid_position", True) == True].copy()
+    hitters_univ = playable[~playable.get("norm_positions", []).apply(lambda xs: isinstance(xs, list) and any("P" in p for p in xs))]
+    pitchers_univ = playable[playable.get("norm_positions", []).apply(lambda xs: isinstance(xs, list) and any("P" in p for p in xs))]
+    if "curr_AB" in hitters_univ.columns:
+        hitters_univ = hitters_univ[pd.to_numeric(hitters_univ["curr_AB"], errors="coerce").fillna(0) >= 50]
+    if "curr_IP" in pitchers_univ.columns:
+        pitchers_univ = pitchers_univ[pd.to_numeric(pitchers_univ["curr_IP"], errors="coerce").fillna(0) >= 20]
+
+    def series_for(base_df: pd.DataFrame, fallback_df: pd.DataFrame, column: str) -> pd.Series:
+        if column in base_df.columns:
+            s = pd.to_numeric(base_df[column], errors="coerce").dropna()
+            if not s.empty:
+                return s
+        if column in fallback_df.columns:
+            s = pd.to_numeric(fallback_df[column], errors="coerce").dropna()
+            if not s.empty:
+                return s
+        return pd.Series([0.0, 1.0])
+
+    def minmax_pct(series: pd.Series, value, invert: bool = False) -> float:
+        try:
+            x = float(value)
+        except (TypeError, ValueError):
+            return 0.0
+        s = pd.to_numeric(series, errors="coerce").dropna()
+        if s.empty:
+            return 0.0
+        vmin = s.min(); vmax = s.max()
+        if vmax == vmin:
+            return 0.0
+        t = (x - vmin) / (vmax - vmin)
+        t = max(0.0, min(1.0, t))
+        return 1.0 - t if invert else t
     # split hitters/pitchers by positions list
     team_df["is_pitcher"] = team_df["norm_positions"].apply(lambda xs: isinstance(xs, list) and any("P" in p for p in xs))
     hitters = team_df[~team_df["is_pitcher"]]
@@ -158,10 +192,21 @@ def _league_team_breakdown(df: pd.DataFrame, team: str, hide_injured: bool):
     ]
     hitters_avg = avg_block(hitters, [f"curr_{k}" for k,_ in hitter_stats])
     pitchers_avg = avg_block(pitchers, [f"curr_{k}" for k,_ in pitcher_stats])
-    # label cleanup: remove curr_
-    hitters_avg = [(k.replace("curr_", ""), v) for k,v in hitters_avg]
-    pitchers_avg = [(k.replace("curr_", ""), v) for k,v in pitchers_avg]
-    return {"hitters": hitters_avg, "pitchers": pitchers_avg}
+    # Build pct for each stat using universe distributions
+    hitter_items = []
+    for k,v in hitters_avg:
+        label = k.replace("curr_", "")
+        s = series_for(hitters_univ, playable, k)
+        pct = int(minmax_pct(s, v, invert=False) * 100)
+        hitter_items.append({"label": label, "value": v, "pct": pct})
+    pitcher_items = []
+    for k,v in pitchers_avg:
+        label = k.replace("curr_", "")
+        invert = label in ("FIP", "WHIP")
+        s = series_for(pitchers_univ, playable, k)
+        pct = int(minmax_pct(s, v, invert=invert) * 100)
+        pitcher_items.append({"label": label, "value": v, "pct": pct})
+    return {"hitters": hitter_items, "pitchers": pitcher_items}
 
 
 def _compare_data(df: pd.DataFrame, name1: str, name2: str):

@@ -190,14 +190,24 @@
             {% elif view=='league_team' and breakdown %}
               <div class="table" data-sortable="true" style="margin-bottom:12px">
                 <div class="trow thead"><div class="sortable" data-type="string">Hitter Stat</div><div class="sortable" data-type="number">Avg</div><div></div><div></div><div></div></div>
-                {% for k,v in breakdown.hitters %}
-                <div class="trow"><div>{{ k }}</div><div>{{ v }}</div><div></div><div></div><div></div></div>
+                {% for item in breakdown.hitters %}
+                <div class="trow">
+                  <div>{{ item.label }}</div>
+                  <div>{{ '%.3f'|format(item.value) if item.value is number else item.value }}</div>
+                  <div></div><div></div>
+                  <div><div class="mini"><i style="width: {{ item.pct }}%"></i></div></div>
+                </div>
                 {% endfor %}
               </div>
               <div class="table" data-sortable="true">
                 <div class="trow thead"><div class="sortable" data-type="string">Pitcher Stat</div><div class="sortable" data-type="number">Avg</div><div></div><div></div><div></div></div>
-                {% for k,v in breakdown.pitchers %}
-                <div class="trow"><div>{{ k }}</div><div>{{ v }}</div><div></div><div></div><div></div></div>
+                {% for item in breakdown.pitchers %}
+                <div class="trow">
+                  <div>{{ item.label }}</div>
+                  <div>{{ '%.3f'|format(item.value) if item.value is number else item.value }}</div>
+                  <div></div><div></div>
+                  <div><div class="mini"><i style="width: {{ item.pct }}%"></i></div></div>
+                </div>
                 {% endfor %}
               </div>
             {% else %}

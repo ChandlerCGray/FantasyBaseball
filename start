@@ -1,3 +1,9 @@
 #!/bin/bash
-# Fantasy Baseball Hub - Cross-platform launcher
-python3 app.py 
+# Fantasy Baseball Hub - FastAPI launcher
+set -euo pipefail
+
+if [ -d "venv" ]; then
+  source venv/bin/activate
+fi
+
+exec uvicorn src.server.main:app --host 0.0.0.0 --port 8000 --reload

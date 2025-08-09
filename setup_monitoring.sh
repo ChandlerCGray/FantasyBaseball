@@ -44,14 +44,14 @@ chmod +x /tmp/fantasy_baseball_monitor.sh
 # Add cron job to run health check every 5 minutes
 (crontab -l 2>/dev/null; echo "*/5 * * * * /tmp/fantasy_baseball_monitor.sh") | crontab -
 
-# Add cron job to update data daily at 6 AM
-(crontab -l 2>/dev/null; echo "0 6 * * * $MANAGE_SCRIPT update") | crontab -
+# Add cron job to update data daily at 3:20 AM
+(crontab -l 2>/dev/null; echo "20 3 * * * $MANAGE_SCRIPT update") | crontab -
 
 echo "✅ Monitoring setup complete!"
 echo ""
 echo "Cron jobs added:"
 echo "  - Health check every 5 minutes"
-echo "  - Data update daily at 6 AM"
+echo "  - Data update daily at 3:20 AM"
 echo ""
 echo "Monitor logs:"
 echo "  - Health check: tail -f /tmp/fantasy_baseball_health.log"

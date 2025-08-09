@@ -93,10 +93,10 @@ def run_data_update():
                     text=True,
                     cwd="."
                 )
-                st.success("✅ Data updated successfully!")
+                st.success("Data updated successfully")
                 st.rerun()
             except subprocess.CalledProcessError as e:
-                st.error("❌ Update failed")
+                st.error("Update failed")
                 st.code(e.stderr or "No error output")
 
 def load_data():

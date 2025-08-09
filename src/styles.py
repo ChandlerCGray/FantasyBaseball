@@ -21,40 +21,63 @@ def get_custom_css():
         font-family: 'Inter', sans-serif;
     }}
     
-    /* Sidebar styling */
-    .css-1d391kg {{
-        padding-top: 1rem;
+    /* Sidebar styling - comprehensive approach */
+    [data-testid="stSidebar"] {{
+        display: block !important;
+        visibility: visible !important;
+        width: 21rem !important;
+        min-width: 21rem !important;
+    }}
+    
+    [data-testid="stSidebar"] > div {{
         display: block !important;
         visibility: visible !important;
     }}
     
-    /* Ensure sidebar is accessible on mobile */
-    @media (max-width: 768px) {{
-        .css-1d391kg {{
-            display: block !important;
-            visibility: visible !important;
-            width: 100% !important;
-            max-width: 100% !important;
+    /* Target any sidebar CSS class */
+    .css-1d391kg, .css-1lcbmhc, .css-1d391kg {{
+        display: block !important;
+        visibility: visible !important;
+        padding-top: 1rem;
+    }}
+    
+    /* Hide sidebar only on small phones; keep it on tablets/desktop */
+    @media (max-width: 600px) {{
+        [data-testid="stSidebar"] {{
+            display: none !important;
         }}
         
+        .main {{
+            margin-left: 0 !important;
+            width: 100% !important;
+        }}
+        
+        .main .block-container {{
+            margin-left: 0 !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            max-width: 100% !important;
+        }}
+    }}
+        
         /* Make sidebar content more mobile-friendly */
-        .css-1d391kg .stSelectbox {{
+        [data-testid="stSidebar"] .stSelectbox {{
             font-size: 16px;
             min-height: 44px;
         }}
         
-        .css-1d391kg .stButton > button {{
+        [data-testid="stSidebar"] .stButton > button {{
             min-height: 44px;
             font-size: 16px;
             margin: 0.5rem 0;
         }}
         
-        .css-1d391kg .stCheckbox {{
+        [data-testid="stSidebar"] .stCheckbox {{
             font-size: 16px;
             min-height: 44px;
         }}
         
-        .css-1d391kg .stSlider {{
+        [data-testid="stSidebar"] .stSlider {{
             margin: 1rem 0;
         }}
     }}
@@ -96,33 +119,33 @@ def get_custom_css():
         }}
     }}
     
-    /* Custom tile styling with muted rainbow 3D effects */
+    /* Compact tile styling */
     .tile {{
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 1rem;
+        margin: 0.75rem 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         border: 1px solid rgba(226, 232, 240, 0.8);
-        border-left: 4px solid {COLORS['primary']};
-        transition: all 0.3s ease;
+        border-left: 3px solid {COLORS['primary']};
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
         position: relative;
     }}
     
     .tile:hover {{
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
-        border-left-width: 6px;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        border-left-width: 4px;
     }}
     
     /* Muted Rainbow Tile Variations with 3D Effects and Condensed Spacing */
     .tile-rainbow-1 {{
         background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
         border-left: 3px solid #0ea5e9;
-        box-shadow: 0 2px 8px rgba(14, 165, 233, 0.1), 0 1px 3px rgba(14, 165, 233, 0.05);
+        box-shadow: 0 1px 4px rgba(14, 165, 233, 0.08);
         border-radius: 6px;
-        padding: 0.6rem;
-        margin: 0.4rem 0;
+        padding: 0.5rem;
+        margin: 0.35rem 0;
         transition: all 0.2s ease;
         position: relative;
     }}
@@ -137,10 +160,10 @@ def get_custom_css():
     .tile-rainbow-2 {{
         background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
         border-left: 3px solid #22c55e;
-        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.1), 0 1px 3px rgba(34, 197, 94, 0.05);
+        box-shadow: 0 1px 4px rgba(34, 197, 94, 0.08);
         border-radius: 6px;
-        padding: 0.6rem;
-        margin: 0.4rem 0;
+        padding: 0.5rem;
+        margin: 0.35rem 0;
         transition: all 0.2s ease;
         position: relative;
     }}
@@ -155,10 +178,10 @@ def get_custom_css():
     .tile-rainbow-3 {{
         background: linear-gradient(135deg, #ffffff 0%, #fefce8 100%);
         border-left: 3px solid #eab308;
-        box-shadow: 0 2px 8px rgba(234, 179, 8, 0.1), 0 1px 3px rgba(234, 179, 8, 0.06);
+        box-shadow: 0 1px 4px rgba(234, 179, 8, 0.08);
         border-radius: 6px;
-        padding: 0.6rem;
-        margin: 0.4rem 0;
+        padding: 0.5rem;
+        margin: 0.35rem 0;
         transition: all 0.2s ease;
         position: relative;
     }}

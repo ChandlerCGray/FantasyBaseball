@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ name }} • Fantasy Baseball Hub</title>
+    <link rel="stylesheet" href="/static/css/base.css" />
+  </head>
+  <body>
+    <div class="app">
+      <main class="content" style="padding:16px">
+        <div style="margin-bottom:8px">
+          <a href="javascript:history.back()" class="compare-link">← Back</a>
+        </div>
+        {% if player %}
+        <section class="panel">
+          <div class="panel-title">{{ player.identity.display_name }}</div>
+          <div class="panel-body">
+            <div class="table" style="margin-bottom:16px">
+              <div class="trow thead"><div>Field</div><div>Value</div><div></div><div></div><div></div></div>
+              <div class="trow"><div>Team</div><div>{{ player.identity.Team }}</div><div></div><div></div><div></div></div>
+              <div class="trow"><div>Position</div><div>{{ player.identity.position }}</div><div></div><div></div><div></div></div>
+              <div class="trow"><div>Roster</div><div>{{ player.identity.fantasy_team }}</div><div></div><div></div><div></div></div>
+              <div class="trow"><div>Injury</div><div>{{ player.identity.injury_status }}</div><div></div><div></div><div></div></div>
+            </div>
+
+            <h3 style="margin:8px 0">Key Metrics</h3>
+            <div class="table" style="margin-bottom:12px">
+              <div class="trow thead"><div>Stat</div><div>Value</div><div></div><div></div><div></div></div>
+              {% for m in player.metrics %}
+              <div class="trow">
+                <div>{{ m.label }}</div>
+                <div>{{ '%.3f'|format(m.curr|float) if m.curr is string or m.curr is number else m.curr }}</div>
+                <div></div><div></div>
+                <div>
+                  <div class="mini {{ m.curr_badge }}" title="{{ m.hint }}">
+                    <i style="width: {{ m.curr_bar }}%"></i>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <h3 style="margin:12px 0">Projections</h3>
+            <div class="table">
+              <div class="trow thead"><div>Stat</div><div>Value</div><div></div><div></div><div></div></div>
+              {% for k,v in player.proj_rows %}
+              <div class="trow">
+                <div>{{ k }}</div>
+                <div>{% if v is number %}{{ '%.3f'|format(v) }}{% else %}{{ v }}{% endif %}</div>
+                <div></div><div></div>
+                <div>
+                  {% set pct = player.proj_pcts.get(k) if player.proj_pcts else None %}
+                  {% if pct is not none %}
+                  <div class="mini" title="Projection"><i style="width: {{ pct }}%"></i></div>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <h3 style="margin:12px 0">Current</h3>
+            <div class="table">
+              <div class="trow thead"><div>Stat</div><div>Value</div><div></div><div></div><div></div></div>
+              {% for k,v in player.curr_rows %}
+              <div class="trow">
+                <div>{{ k }}</div>
+                <div>{% if v is number %}{{ '%.3f'|format(v) }}{% else %}{{ v }}{% endif %}</div>
+                <div></div><div></div>
+                <div>
+                  {% set pct = player.curr_pcts.get(k) if player.curr_pcts else None %}
+                  {% if pct is not none %}
+                  <div class="mini" title="Current"><i style="width: {{ pct }}%"></i></div>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+        {% else %}
+        <div class="empty" style="padding:24px">Player not found.</div>
+        {% endif %}
+      </main>
+    </div>
+  </body>
+  </html>
+
+

@@ -32,7 +32,7 @@ COLORS = {
 PAGE_CONFIG = {
     "page_title": "Fantasy Baseball Hub",
     "layout": "wide",
-    "initial_sidebar_state": "auto",
+    "initial_sidebar_state": "expanded",
     "menu_items": None  # Hide the hamburger menu
 }
 

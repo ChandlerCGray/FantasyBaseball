@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fantasy Baseball Hub</title>
+    <link rel="stylesheet" href="/static/css/base.css" />
+  </head>
+  <body class="view-{{ view }}">
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">Fantasy Baseball Hub</div>
+        <div class="section">
+          <div class="label">Data</div>
+          <div class="value">{{ data_file }}</div>
+        </div>
+        <div class="section">
+          <div class="label">Team</div>
+          <select id="teamSelect">
+            {% for t in teams %}
+            <option value="{{ t }}" {% if selected_team==t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+         <div class="section">
+          <div class="label">Filters</div>
+          <label class="checkbox"><input type="checkbox" id="hideInjured" {% if hide_injured %}checked{% endif %}/> Hide Injured</label>
+        </div>
+        <div class="section">
+          <button id="updateBtn" class="primary">Update Data</button>
+        </div>
+      </aside>
+      <div class="backdrop" id="backdrop"></div>
+      <main class="content">
+        <header class="toolbar">
+          <nav class="tabs">
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Filters" title="Filters">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M4 7h16v2H4zM7 11h10v2H7zM10 15h4v2h-4z" fill="currentColor"/>
+              </svg>
+            </button>
+            <a class="tab {% if view=='add_drop' %}active{% endif %}" href="/?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Add/Drop</a>
+            <a class="tab {% if view=='team' %}active{% endif %}" href="/team?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">My Team</a>
+            <a class="tab {% if view=='players' %}active{% endif %}" href="/players?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">All Players</a>
+            <a class="tab {% if view=='compare' %}active{% endif %}" href="/compare?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Compare</a>
+            <a class="tab {% if view=='drop_candidates' %}active{% endif %}" href="/drop-candidates?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Drop Candidates</a>
+            <a class="tab {% if view=='league' %}active{% endif %}" href="/league?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">League</a>
+          </nav>
+        </header>
+        <section class="panel panel-{{ view }}">
+          <div class="panel-title">{% if view=='add_drop' %}Add/Drop Recommendations{% elif view=='free_agents' %}Free Agents{% elif view=='drop_candidates' %}Drop Candidates{% elif view=='team' %}My Team{% elif view=='compare' %}Compare{% elif view=='league' %}League{% elif view=='league_team' %}Team Breakdown{% elif view=='players' %}All Players{% else %}Add/Drop Recommendations{% endif %}</div>
+          <div id="root" class="panel-body">
+            {% if view=='add_drop' and upgrades and upgrades|length > 0 %}
+              {% for u in upgrades %}
+                <div class="card">
+                  <div class="row">
+                    <div class="col">
+                      <div class="kicker add">Add</div>
+                      <div class="name">{{ u.add.display_name }}</div>
+                      <div class="meta">Team: {{ u.add.Team or 'Unknown' }}</div>
+                      <div class="meta">Score: {{ '%.3f'|format(u.add.proj_CompositeScore) }}</div>
+                    </div>
+                    <div class="col arrow">→</div>
+                    <div class="col">
+                      <div class="kicker drop">Drop</div>
+                      <div class="name">{{ u.drop.display_name }}</div>
+                      <div class="meta">Roster</div>
+                      <div class="meta">Score: {{ '%.3f'|format(u.drop.proj_CompositeScore) }}</div>
+                    </div>
+                    <div class="col gain">+{{ '%.3f'|format(u.gain) }}
+                      <a class="compare-link" href="/compare?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}&p1={{ u.add.display_name }}&p2={{ u.drop.display_name }}">Compare</a>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+            {% if view=='add_drop' and fa %}
+              <h3 style="margin:12px 0 6px 0;color:var(--accent)">Available Free Agents</h3>
+              <div class="table" data-sortable="true">
+                <div class="trow thead">
+                  <div class="sortable" data-type="string">Name</div>
+                  <div class="sortable" data-type="string">Team</div>
+                  <div class="sortable" data-type="string">Pos</div>
+                  <div class="sortable" data-type="number">Proj</div>
+                  <div class="sortable" data-type="number">Curr</div>
+                </div>
+                {% for p in fa %}
+                  <div class="trow">
+                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a></div>
+                  <div>{{ p.Team }}</div>
+                  <div>{{ p.position }}</div>
+                  <div>{{ '%.3f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '' }}</div>
+                  <div>{{ '%.3f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '' }}</div>
+                </div>
+                {% endfor %}
+              </div>
+            {% elif view=='drop_candidates' and drops %}
+              <div class="table" data-sortable="true">
+                <div class="trow thead">
+                  <div class="sortable" data-type="string">Name</div>
+                  <div class="sortable" data-type="string">Team</div>
+                  <div class="sortable" data-type="string">Pos</div>
+                  <div class="sortable" data-type="number">Proj</div>
+                  <div class="sortable" data-type="number">Curr</div>
+                </div>
+                {% for p in drops %}
+                <div class="trow">
+                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a></div>
+                  <div>{{ p.Team }}</div>
+                  <div>{{ p.position }}</div>
+                  <div>{{ '%.3f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '' }}</div>
+                  <div>{{ '%.3f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '' }}</div>
+                </div>
+                {% endfor %}
+              </div>
+            {% elif view=='team' and roster %}
+              <div class="table" data-sortable="true">
+                <div class="trow thead">
+                  <div class="sortable" data-type="string">Name</div>
+                  <div class="sortable" data-type="string">Team</div>
+                  <div class="sortable" data-type="string">Pos</div>
+                  <div class="sortable" data-type="number">Proj</div>
+                  <div class="sortable" data-type="number">Curr</div>
+                </div>
+                {% for p in roster %}
+                <div class="trow">
+                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a></div>
+                  <div>{{ p.Team }}</div>
+                  <div>{{ p.position }}</div>
+                  <div>{{ '%.3f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '' }}</div>
+                  <div>{{ '%.3f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '' }}</div>
+                </div>
+                {% endfor %}
+              </div>
+            {% elif view=='league' and league %}
+              <div class="table" data-sortable="true">
+                <div class="trow thead">
+                  <div class="sortable" data-type="string">Team</div>
+                  <div class="sortable" data-type="number">Players</div>
+                  <div class="sortable" data-type="number">Avg Proj</div>
+                  <div class="sortable" data-type="number">Avg Curr</div>
+                  <div></div>
+                </div>
+                {% for r in league %}
+                <div class="trow">
+                  <div><a class="link" href="/league/team?team={{ r.fantasy_team }}&hideInjured={{ 'true' if hide_injured else 'false'}}&minScore={{min_score}}">{{ r.fantasy_team }}</a></div>
+                  <div>{{ r.players }}</div>
+                  <div>{{ '%.3f'|format(r.proj_mean) }}</div>
+                  <div>{{ '%.3f'|format(r.curr_mean) }}</div>
+                  <div></div>
+                </div>
+                {% endfor %}
+              </div>
+            {% elif view=='compare' %}
+              <form class="cmp" method="get" action="/compare">
+                <input type="hidden" name="team" value="{{selected_team}}" />
+                <input type="hidden" name="hideInjured" value="{{ 'true' if hide_injured else 'false'}}" />
+                <input type="hidden" name="minScore" value="{{min_score}}" />
+                <div class="cmp-grid">
+                  <input name="p1" placeholder="Player 1" value="{{ p1 or '' }}" />
+                  <input name="p2" placeholder="Player 2" value="{{ p2 or '' }}" />
+                  <button class="primary" type="submit">Compare</button>
+                </div>
+              </form>
+              <div class="cmp-results">
+                 <div class="table" data-sortable="true">
+                   <div class="trow thead">
+                     <div class="sortable" data-type="string"></div>
+                     <div class="sortable" data-type="string">Team</div>
+                     <div class="sortable" data-type="string">Pos</div>
+                     <div class="sortable" data-type="number">Proj</div>
+                     <div class="sortable" data-type="number">Curr</div>
+                   </div>
+                  <div class="trow">
+                    <div>{% if cmp1 %}<a class="link" href="/player?name={{ cmp1.display_name }}">{{ cmp1.display_name }}</a>{% else %}{% endif %}</div>
+                    <div>{{ cmp1.Team if cmp1 else '' }}</div>
+                    <div>{{ cmp1.position if cmp1 else '' }}</div>
+                     <div>{{ '%.3f'|format(cmp1.proj_CompositeScore) if cmp1 and cmp1.proj_CompositeScore is not none else '' }}</div>
+                     <div>{{ '%.3f'|format(cmp1.curr_CompositeScore) if cmp1 and cmp1.curr_CompositeScore is not none else '' }}</div>
+                  </div>
+                  <div class="trow">
+                    <div>{% if cmp2 %}<a class="link" href="/player?name={{ cmp2.display_name }}">{{ cmp2.display_name }}</a>{% else %}{% endif %}</div>
+                    <div>{{ cmp2.Team if cmp2 else '' }}</div>
+                    <div>{{ cmp2.position if cmp2 else '' }}</div>
+                     <div>{{ '%.3f'|format(cmp2.proj_CompositeScore) if cmp2 and cmp2.proj_CompositeScore is not none else '' }}</div>
+                     <div>{{ '%.3f'|format(cmp2.curr_CompositeScore) if cmp2 and cmp2.curr_CompositeScore is not none else '' }}</div>
+                  </div>
+                </div>
+              </div>
+            {% elif view=='league_team' and breakdown %}
+              <div class="table" data-sortable="true" style="margin-bottom:12px">
+                <div class="trow thead"><div class="sortable" data-type="string">Hitter Stat</div><div class="sortable" data-type="number">Avg</div><div></div><div></div><div></div></div>
+                {% for k,v in breakdown.hitters %}
+                <div class="trow"><div>{{ k }}</div><div>{{ v }}</div><div></div><div></div><div></div></div>
+                {% endfor %}
+              </div>
+              <div class="table" data-sortable="true">
+                <div class="trow thead"><div class="sortable" data-type="string">Pitcher Stat</div><div class="sortable" data-type="number">Avg</div><div></div><div></div><div></div></div>
+                {% for k,v in breakdown.pitchers %}
+                <div class="trow"><div>{{ k }}</div><div>{{ v }}</div><div></div><div></div><div></div></div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="empty">No clear upgrades for the current filters.</div>
+            {% endif %}
+            {% if view=='players' %}
+              <form class="cmp" method="get" action="/players" style="margin-bottom:10px">
+                <input type="hidden" name="team" value="{{selected_team}}" />
+                <input type="hidden" name="hideInjured" value="{{ 'true' if hide_injured else 'false'}}" />
+                <input type="hidden" name="minScore" value="{{min_score}}" />
+                <div class="cmp-grid">
+                  <input name="q" placeholder="Search name" value="{{ q or '' }}" />
+                  <select name="pos">
+                    <option value="">Any Position</option>
+                    {% for p in positions %}
+                      <option value="{{p}}" {% if pos==p %}selected{% endif %}>{{p}}</option>
+                    {% endfor %}
+                  </select>
+                  <select name="roster">
+                    <option value="">Any Roster</option>
+                    <option value="Free Agent" {% if roster=='Free Agent' %}selected{% endif %}>Free Agent</option>
+                    {% for t in teams %}
+                      <option value="{{t}}" {% if roster==t %}selected{% endif %}>{{t}}</option>
+                    {% endfor %}
+                  </select>
+                  <select name="sort">
+                    <option value="proj" {% if sort=='proj' %}selected{% endif %}>Sort: Proj</option>
+                    <option value="curr" {% if sort=='curr' %}selected{% endif %}>Sort: Curr</option>
+                    <option value="name" {% if sort=='name' %}selected{% endif %}>Sort: Name</option>
+                  </select>
+                  <select name="per">
+                    {% for n in [25,50,100,200] %}
+                      <option value="{{n}}" {% if per==n %}selected{% endif %}>{{n}} / page</option>
+                    {% endfor %}
+                  </select>
+                  <button class="primary" type="submit">Apply</button>
+                </div>
+              </form>
+              <div class="table" data-sortable="true">
+                <div class="trow thead">
+                  <div class="sortable" data-type="string">Name</div>
+                  <div class="sortable" data-type="string">Team</div>
+                  <div class="sortable" data-type="string">Pos</div>
+                  <div class="sortable" data-type="number">Proj</div>
+                  <div class="sortable" data-type="number">Curr</div>
+                </div>
+                {% for p in players %}
+                <div class="trow">
+                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a></div>
+                  <div>{{ p.Team }}</div>
+                  <div>{{ p.position }}</div>
+                  <div>{{ '%.3f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '' }}</div>
+                  <div>{{ '%.3f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '' }}</div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="pagination" style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+                {% set total_pages = (total // per) + (1 if (total % per) else 0) %}
+                <span class="meta">Page {{ page }} of {{ total_pages }}</span>
+                {% if page>1 %}
+                  <a class="tab" href="/players?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}&minScore={{min_score}}&q={{q}}&pos={{pos}}&roster={{roster}}&sort={{sort}}&per={{per}}&page={{page-1}}">Prev</a>
+                {% endif %}
+                {% if page<total_pages %}
+                  <a class="tab" href="/players?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}&minScore={{min_score}}&q={{q}}&pos={{pos}}&roster={{roster}}&sort={{sort}}&per={{per}}&page={{page+1}}">Next</a>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </section>
+      </main>
+    </div>
+    <script>
+      // Lightweight client-side sorter for tables with data-sortable
+      function parseCell(text, type){
+        if(type==='number'){
+          const n = parseFloat(text.replace(/[^0-9.\-]/g, ''));
+          return isNaN(n) ? -Infinity : n;
+        }
+        return (text||'').toString().toLowerCase();
+      }
+      function setupSortableTables(){
+        document.querySelectorAll('.table[data-sortable="true"]').forEach(table => {
+          const head = table.querySelector('.trow.thead');
+          if(!head) return;
+          const headers = Array.from(head.children);
+          headers.forEach((h, idx) => {
+            if(!h.classList.contains('sortable')) return;
+            h.addEventListener('click', () => {
+              const type = h.getAttribute('data-type') || 'string';
+              const desc = h.classList.toggle('sort-desc');
+              headers.forEach(x=>x.classList.remove('sort-active'));
+              h.classList.add('sort-active');
+              const rows = Array.from(table.querySelectorAll('.trow:not(.thead)'));
+              const getText = (row) => (row.children[idx]?.textContent || '').trim();
+              rows.sort((a,b)=>{
+                const av = parseCell(getText(a), type);
+                const bv = parseCell(getText(b), type);
+                if(av < bv) return desc ? 1 : -1;
+                if(av > bv) return desc ? -1 : 1;
+                return 0;
+              });
+              rows.forEach(r=>table.appendChild(r));
+            });
+          });
+        });
+      }
+      document.addEventListener('DOMContentLoaded', setupSortableTables);
+      const applyFilters = () => {
+        const team = document.getElementById('teamSelect').value;
+        const hideInj = document.getElementById('hideInjured').checked;
+        const q = new URLSearchParams({team, hideInjured: hideInj});
+        window.location.search = q.toString();
+      };
+
+      document.getElementById('teamSelect')?.addEventListener('change', applyFilters);
+      document.getElementById('hideInjured')?.addEventListener('change', applyFilters);
+
+      document.getElementById('updateBtn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('updateBtn');
+        btn.disabled = true; btn.textContent = 'Updating...';
+        try { await fetch('/update', { method: 'POST' }); location.reload(); } catch (e) {}
+      });
+
+      // Mobile sidebar toggle
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      const backdrop = document.getElementById('backdrop');
+      const toggleSidebar = (open) => {
+        if(open===undefined){ document.body.classList.toggle('sidebar-open'); }
+        else if(open){ document.body.classList.add('sidebar-open'); }
+        else { document.body.classList.remove('sidebar-open'); }
+      };
+      sidebarToggle?.addEventListener('click', () => toggleSidebar());
+      backdrop?.addEventListener('click', () => toggleSidebar(false));
+    </script>
+  </body>
+  </html>
+
+

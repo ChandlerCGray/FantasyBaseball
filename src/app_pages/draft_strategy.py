@@ -240,7 +240,7 @@ def show_draft_strategy(df):
     col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
     
     with col1:
-        search_term = st.text_input("🔍 Search Players", placeholder="Enter player name...")
+        search_term = st.text_input("Search Players", placeholder="Enter player name...")
     
     with col2:
         # Get available positions
@@ -251,7 +251,7 @@ def show_draft_strategy(df):
                     available_positions.update(positions)
         
         position_filter = st.selectbox(
-            "📍 Position Filter",
+            "Position Filter",
             options=['All'] + sorted(list(available_positions))
         )
     
@@ -265,7 +265,7 @@ def show_draft_strategy(df):
     
     with col4:
         # Draft status filter
-        draft_status = st.selectbox("📋 Status", options=['All', 'Available', 'Drafted'])
+        draft_status = st.selectbox("Status", options=['All', 'Available', 'Drafted'])
     
     # Apply filters
     filtered_df = draft_df.copy()
@@ -338,7 +338,7 @@ def show_draft_strategy(df):
         # Add a "Draft" button column for interactive drafting
         if 'Drafted' in display_df.columns:
             display_df['Draft_Status'] = display_df['Drafted'].apply(
-                lambda x: '✅ Drafted' if x != '' else '⭕ Available'
+                lambda x: 'Drafted' if x != '' else 'Available'
             )
         
         # Format the dataframe for better display
@@ -401,7 +401,7 @@ def show_draft_strategy(df):
             round_num = player.get('Round', 1)
             base_score = player.get('Base_Score', 0)
             adj_score = player.get('Adj_Score', 0)
-            draft_status = player.get('Draft_Status', '⭕ Available')
+            draft_status = player.get('Draft_Status', 'Available')
             
             # Create columns for player info and draft button
             col1, col2, col3, col4, col5, col6, col7 = st.columns([1, 3, 1, 1, 1, 1, 1.5])
@@ -411,14 +411,7 @@ def show_draft_strategy(df):
             
             with col2:
                 # Color code by tier
-                if tier == 1:
-                    st.markdown(f"🟢 **{name}**")
-                elif tier == 2:
-                    st.markdown(f"🟡 **{name}**")
-                elif tier == 3:
-                    st.markdown(f"🟠 **{name}**")
-                else:
-                    st.markdown(f"⚪ **{name}**")
+                st.markdown(f"**{name}**")
                 st.caption(f"{position} • {team}")
             
             with col3:
@@ -435,7 +428,7 @@ def show_draft_strategy(df):
             
             with col7:
                 # Draft/Undraft button
-                is_drafted = '✅' in draft_status
+                is_drafted = 'Drafted' in draft_status
                 
                 if is_drafted:
                     if st.button(f"Undraft", key=f"undraft_{idx}_{name}", help=f"Mark {name} as available"):
@@ -458,7 +451,7 @@ def show_draft_strategy(df):
                         label_visibility="collapsed"
                     )
                     
-                    if st.button(f"✅ Draft", key=f"draft_{idx}_{name}", help=f"Mark {name} as drafted"):
+                    if st.button(f"Draft", key=f"draft_{idx}_{name}", help=f"Mark {name} as drafted"):
                         # Update the dataframe
                         updated_df = mark_player_drafted(st.session_state.draft_data['draft_df'], name, team_input)
                         st.session_state.draft_data['draft_df'] = updated_df
@@ -480,7 +473,7 @@ def show_draft_strategy(df):
         
         # Position-specific rankings
         st.markdown("---")
-        st.markdown("### 📍 Position Rankings")
+        st.markdown("### Position Rankings")
         
         # Create position tabs
         if 'Eligible_Positions' in filtered_df.columns:
@@ -517,8 +510,8 @@ def show_draft_strategy(df):
                             tier = int(player.get('Tier', 1))
                             drafted = player.get('Drafted', '')
                             
-                            status_icon = '✅' if drafted != '' else '⭕'
-                            st.write(f"{status_icon} {j+1}. {name} (#{rank}, T{tier})")
+                            status_label = 'Drafted' if drafted != '' else 'Available'
+                            st.write(f"{j+1}. {name} (#{rank}, T{tier}) — {status_label}")
         
         # Tier breakdown
         st.markdown("---")
@@ -550,7 +543,7 @@ def show_draft_strategy(df):
     
     # Quick actions section
     st.markdown("---")
-    st.markdown("### ⚡ Quick Actions")
+    st.markdown("### Quick Actions")
     
     action_col1, action_col2, action_col3 = st.columns(3)
     
@@ -559,12 +552,12 @@ def show_draft_strategy(df):
             st.rerun()
     
     with action_col2:
-        if st.button("📈 Show Tier 1 Only", use_container_width=True):
+        if st.button("Show Tier 1 Only", use_container_width=True):
             st.session_state.tier_filter = 1
             st.rerun()
     
     with action_col3:
-        if st.button("⭕ Available Only", use_container_width=True):
+        if st.button("Available Only", use_container_width=True):
             st.session_state.draft_status = 'Available'
             st.rerun()
     

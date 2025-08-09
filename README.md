@@ -184,6 +184,10 @@ This project is built for fantasy baseball enthusiasts who love data-driven deci
 - **[Production Setup](PRODUCTION_SETUP.md)** - 24/7 service, monitoring, and management
 - **[API Documentation](docs/API.md)** - Developer reference
 
+## Acknowledgements
+
+- Special thanks to the open-source `espn-api` project by cwendt94, which makes interacting with ESPN Fantasy data possible. See `espn-api` on GitHub: https://github.com/cwendt94/espn-api
+
 ## License
 
 MIT License - Use it, modify it, win your league with it!

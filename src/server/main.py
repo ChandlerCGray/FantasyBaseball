@@ -533,19 +533,11 @@ def _player_detail(df: pd.DataFrame, name: str):
             return "avg"
         return "concern"
 
-    def fmt(val, kind: str):
-        try:
-            x = float(val)
-        except (TypeError, ValueError):
-            return ""
-        if kind == "%":
-            return f"{x:.3f}%"
-        if kind == "int":
-            return f"{x:.0f}"
-        # default: always 3 decimals for visibility consistency
-        return f"{x:.3f}"
 
-    metrics = []
+    # Build per-stat pct dictionaries for projections/current tables
+    proj_pcts: dict[str, int] = {}
+    curr_pcts: dict[str, int] = {}
+    
     # Build qualified subsets and compute dynamic min/max percentiles per stat
     playable = df[df.get("has_valid_position", True) == True].copy()
     hitters_df = playable[~playable.get("norm_positions", []).apply(lambda xs: isinstance(xs, list) and any("P" in p for p in xs))]
@@ -556,108 +548,6 @@ def _player_detail(df: pd.DataFrame, name: str):
         hitters_df = hitters_df[pd.to_numeric(hitters_df["curr_AB"], errors="coerce").fillna(0) >= 50]
     if "curr_IP" in pitchers_df.columns:
         pitchers_df = pitchers_df[pd.to_numeric(pitchers_df["curr_IP"], errors="coerce").fillna(0) >= 20]
-
-    # CompositeScore (use overall distribution)
-    proj_c = projections.get("CompositeScore")
-    curr_c = current.get("CompositeScore")
-    comp_series_curr = series_for(playable, playable, "curr_CompositeScore")
-    comp_series_proj = series_for(playable, playable, "proj_CompositeScore") if "proj_CompositeScore" in playable.columns else comp_series_curr
-    curr_c_pct = minmax_pct(comp_series_curr, value_for(row, "curr_CompositeScore", curr_c), invert=False)
-    proj_c_pct = minmax_pct(comp_series_proj, value_for(row, "proj_CompositeScore", proj_c), invert=False)
-    metrics.append({
-        "label": "Composite",
-        "hint": "Overall value (higher is better)",
-        "proj": fmt(proj_c, ""),
-        "curr": fmt(curr_c, ""),
-        "curr_bar": int(curr_c_pct * 100),
-        "curr_badge": badge_for(curr_c_pct),
-        "proj_bar": int(proj_c_pct * 100),
-        "proj_badge": badge_for(proj_c_pct),
-        "delta": fmt((float(curr_c) - float(proj_c)) if (curr_c is not None and proj_c is not None) else None, ""),
-        "delta_class": ("pos" if (curr_c is not None and proj_c is not None and float(curr_c)-float(proj_c) > 0) else ("neg" if (curr_c is not None and proj_c is not None and float(curr_c)-float(proj_c) < 0) else "neutral")),
-    })
-    if is_pitcher:
-        kbb_p = projections.get("K-BB%")
-        kbb_c = current.get("K-BB%")
-        whip_p = projections.get("WHIP")
-        whip_c = current.get("WHIP")
-        fip_p = projections.get("FIP")
-        fip_c = current.get("FIP")
-        kbb_c_pct = minmax_pct(series_for(pitchers_df, playable, "curr_K-BB%"), value_for(row, "curr_K-BB%", kbb_c), invert=False)
-        kbb_p_pct = minmax_pct(series_for(pitchers_df, playable, "proj_K-BB%"), value_for(row, "proj_K-BB%", kbb_p), invert=False)
-        whip_c_pct = minmax_pct(series_for(pitchers_df, playable, "curr_WHIP"), value_for(row, "curr_WHIP", whip_c), invert=True)
-        whip_p_pct = minmax_pct(series_for(pitchers_df, playable, "proj_WHIP"), value_for(row, "proj_WHIP", whip_p), invert=True)
-        fip_c_pct = minmax_pct(series_for(pitchers_df, playable, "curr_FIP"), value_for(row, "curr_FIP", fip_c), invert=True)
-        fip_p_pct = minmax_pct(series_for(pitchers_df, playable, "proj_FIP"), value_for(row, "proj_FIP", fip_p), invert=True)
-        metrics += [
-            {"label": "K-BB%", "hint": "Strikeouts minus walks (higher is better)",
-             "proj": fmt(kbb_p, "%"), "curr": fmt(kbb_c, "%"),
-             "curr_bar": int(kbb_c_pct * 100),
-             "curr_badge": badge_for(kbb_c_pct),
-             "proj_bar": int(kbb_p_pct * 100),
-             "proj_badge": badge_for(kbb_p_pct),
-             "delta": fmt((float(kbb_c) - float(kbb_p)) if (kbb_c is not None and kbb_p is not None) else None, "%"),
-             "delta_class": ("pos" if (kbb_c is not None and kbb_p is not None and float(kbb_c)-float(kbb_p) > 0) else ("neg" if (kbb_c is not None and kbb_p is not None and float(kbb_c)-float(kbb_p) < 0) else "neutral"))},
-            {"label": "WHIP", "hint": "Walks + hits per inning (lower is better)",
-             "proj": fmt(whip_p, ""), "curr": fmt(whip_c, ""),
-             "curr_bar": int(whip_c_pct * 100),
-             "curr_badge": badge_for(whip_c_pct),
-             "proj_bar": int(whip_p_pct * 100),
-             "proj_badge": badge_for(whip_p_pct),
-             "delta": fmt((float(whip_c) - float(whip_p)) if (whip_c is not None and whip_p is not None) else None, ""),
-             "delta_class": ("pos" if (whip_c is not None and whip_p is not None and float(whip_c)-float(whip_p) < 0) else ("neg" if (whip_c is not None and whip_p is not None and float(whip_c)-float(whip_p) > 0) else "neutral"))},
-            {"label": "FIP", "hint": "Fielding independent pitching (lower is better)",
-             "proj": fmt(fip_p, ""), "curr": fmt(fip_c, ""),
-             "curr_bar": int(fip_c_pct * 100),
-             "curr_badge": badge_for(fip_c_pct),
-             "proj_bar": int(fip_p_pct * 100),
-             "proj_badge": badge_for(fip_p_pct),
-             "delta": fmt((float(fip_c) - float(fip_p)) if (fip_c is not None and fip_p is not None) else None, ""),
-             "delta_class": ("pos" if (fip_c is not None and fip_p is not None and float(fip_c)-float(fip_p) < 0) else ("neg" if (fip_c is not None and fip_p is not None and float(fip_c)-float(fip_p) > 0) else "neutral"))},
-        ]
-    else:
-        woba_p = projections.get("wOBA")
-        woba_c = current.get("wOBA")
-        iso_p = projections.get("ISO")
-        iso_c = current.get("ISO")
-        wrc_p = projections.get("wRC+")
-        wrc_c = current.get("wRC+")
-        woba_c_pct = minmax_pct(series_for(hitters_df, playable, "curr_wOBA"), value_for(row, "curr_wOBA", woba_c), invert=False)
-        woba_p_pct = minmax_pct(series_for(hitters_df, playable, "proj_wOBA"), value_for(row, "proj_wOBA", woba_p), invert=False)
-        iso_c_pct = minmax_pct(series_for(hitters_df, playable, "curr_ISO"), value_for(row, "curr_ISO", iso_c), invert=False)
-        iso_p_pct = minmax_pct(series_for(hitters_df, playable, "proj_ISO"), value_for(row, "proj_ISO", iso_p), invert=False)
-        wrc_c_pct = minmax_pct(series_for(hitters_df, playable, "curr_wRC+"), value_for(row, "curr_wRC+", wrc_c), invert=False)
-        wrc_p_pct = minmax_pct(series_for(hitters_df, playable, "proj_wRC+"), value_for(row, "proj_wRC+", wrc_p), invert=False)
-        metrics += [
-            {"label": "wOBA", "hint": "Weighted on-base average (higher is better)",
-             "proj": fmt(woba_p, ""), "curr": fmt(woba_c, ""),
-             "curr_bar": int(woba_c_pct * 100),
-             "curr_badge": badge_for(woba_c_pct),
-             "proj_bar": int(woba_p_pct * 100),
-             "proj_badge": badge_for(woba_p_pct),
-             "delta": fmt((float(woba_c) - float(woba_p)) if (woba_c is not None and woba_p is not None) else None, ""),
-             "delta_class": ("pos" if (woba_c is not None and woba_p is not None and float(woba_c)-float(woba_p) > 0) else ("neg" if (woba_c is not None and woba_p is not None and float(woba_c)-float(woba_p) < 0) else "neutral"))},
-            {"label": "ISO", "hint": "Isolated power (higher is better)",
-             "proj": fmt(iso_p, ""), "curr": fmt(iso_c, ""),
-             "curr_bar": int(iso_c_pct * 100),
-             "curr_badge": badge_for(iso_c_pct),
-             "proj_bar": int(iso_p_pct * 100),
-             "proj_badge": badge_for(iso_p_pct),
-             "delta": fmt((float(iso_c) - float(iso_p)) if (iso_c is not None and iso_p is not None) else None, ""),
-             "delta_class": ("pos" if (iso_c is not None and iso_p is not None and float(iso_c)-float(iso_p) > 0) else ("neg" if (iso_c is not None and iso_p is not None and float(iso_c)-float(iso_p) < 0) else "neutral"))},
-            {"label": "wRC+", "hint": "Run creation index (100 = avg)",
-             "proj": fmt(wrc_p, "int"), "curr": fmt(wrc_c, "int"),
-             "curr_bar": int(wrc_c_pct * 100),
-             "curr_badge": badge_for(wrc_c_pct),
-             "proj_bar": int(wrc_p_pct * 100),
-             "proj_badge": badge_for(wrc_p_pct),
-             "delta": fmt((float(wrc_c) - float(wrc_p)) if (wrc_c is not None and wrc_p is not None) else None, "int"),
-             "delta_class": ("pos" if (wrc_c is not None and wrc_p is not None and float(wrc_c)-float(wrc_p) > 0) else ("neg" if (wrc_c is not None and wrc_p is not None and float(wrc_c)-float(wrc_p) < 0) else "neutral"))},
-        ]
-
-    # Build per-stat pct dictionaries for projections/current tables
-    proj_pcts: dict[str, int] = {}
-    curr_pcts: dict[str, int] = {}
 
     def fill_pct(label: str, curr_col: str | None, proj_col: str | None, invert: bool = False, use_pitchers: bool = False):
         base_df = pitchers_df if use_pitchers else hitters_df
@@ -688,7 +578,6 @@ def _player_detail(df: pd.DataFrame, name: str):
         "projections": projections,
         "current": current,
         "is_pitcher": is_pitcher,
-        "metrics": metrics,
         # filtered rows for display-only relevant stats
         "proj_rows": (
             [("IP", projections.get("IP")), ("FIP", projections.get("FIP")), ("WHIP", projections.get("WHIP")), ("K-BB%", projections.get("K-BB%")), ("SV", projections.get("SV"))]

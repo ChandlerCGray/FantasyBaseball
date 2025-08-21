@@ -1,0 +1,28 @@
+[Unit]
+Description=Fantasy Baseball Dashboard
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=chandlergray
+Group=chandlergray
+WorkingDirectory=/home/chandlergray/FantasyBaseball
+Environment=PATH=/home/chandlergray/FantasyBaseball/venv/bin
+Environment=PYTHONPATH=/home/chandlergray/FantasyBaseball/src
+ExecStart=/bin/bash /home/chandlergray/FantasyBaseball/scripts/start_server.sh
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fantasy-baseball
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/home/chandlergray/FantasyBaseball
+
+[Install]
+WantedBy=multi-user.target

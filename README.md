@@ -3,7 +3,10 @@
 Fantasy baseball analysis platform combining ESPN league data with FanGraphs projections. FastAPI + Jinja2, dark-themed, mobile-optimized.
 
 ![Dashboard](docs/screenshots/dashboard.png)
+![Add/Drop](docs/screenshots/add-drop.png)
+![My Team](docs/screenshots/my-team.png)
 ![Draft Board](docs/screenshots/draft.png)
+![League](docs/screenshots/league.png)
 
 ## Quick Start
 

@@ -10,13 +10,8 @@ __pycache__/
 # Ignore sensitive data
 .env
 
-# Ignore Kiro IDE files
-.kiro/
-.kiro/**/*
-
 # Ignore generated files
 output/
 *.csv
 *.log
 *.xlsx
-Start-TeamAnalyzer.ps1

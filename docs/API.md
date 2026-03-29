@@ -1,104 +1,137 @@
-# Fantasy Baseball Hub API Documentation
+# Fantasy Baseball Hub — API & Developer Reference
 
-This document provides an overview of the key modules and functions in the Fantasy Baseball Hub application.
+## Routes
+
+### UI Pages
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/` | Dashboard — position strength overview for selected team |
+| `GET` | `/add-drop` | Free agent rankings, filterable by position |
+| `GET` | `/team` | Roster for the selected team, filterable by position tab |
+| `GET` | `/players` | Paginated, searchable table of all league players |
+| `GET` | `/compare` | Side-by-side player comparison |
+| `GET` | `/draft` | Interactive draft board |
+| `GET` | `/league` | League standings ranked by projected composite score |
+| `GET` | `/league/team` | Roster breakdown for a specific league team |
+| `GET` | `/player` | Individual player detail page |
+| `GET` | `/drop-candidates` | Players on your roster recommended for dropping |
+| `GET` | `/free-agents` | Free agent list (alternative to add-drop view) |
+
+### Data & Actions
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/update` | Trigger a data refresh from ESPN and FanGraphs |
+| `GET` | `/api/players/search` | JSON player search (used by compare autocomplete) |
+
+### Draft Sub-routes
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/draft/generate` | Generate or regenerate draft rankings |
+| `POST` | `/draft/pick` | Mark a player as drafted |
+| `POST` | `/draft/skip` | Skip a player in the draft order |
+| `POST` | `/draft/unpick` | Undo a draft pick |
+| `GET` | `/api/draft/advisor` | Draft advisor recommendations (JSON) |
+| `GET` | `/api/draft/ideal` | Ideal draft targets (JSON) |
+
+### Common Query Parameters
+
+Most UI pages accept these query parameters:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `team` | string | Selected fantasy team name |
+| `hideInjured` | `true`/`false` | Exclude injured players |
+| `pos` | string | Filter by position (e.g. `OF`, `1B`, `P`) |
+| `minScore` | float | Minimum composite score threshold (default `-1.0`) |
+
+`/players` additionally supports:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `q` | string | Name search query |
+| `roster` | string | Filter by fantasy team or `Free Agent` |
+| `sort` | string | Sort field (`proj`, `curr`, or `name`) |
+| `per` | int | Results per page (`25`, `50`, `100`, `200`) |
+| `page` | int | Page number |
 
 ## Core Modules
 
 ### `src/server/main.py`
-FastAPI application and routes for the server-rendered UI.
-
-**Key Routes:**
-- `GET /` Add/Drop (with Free Agents section)
-- `POST /update` Trigger data refresh
-- `GET /drop-candidates`
-- `GET /team`
-- `GET /compare`
-- `GET /league`
-- `GET /league/team` Team breakdown (hitters/pitchers averages)
-- `GET /players`
-- `GET /player`
-
-### `src/config.py`
-Configuration constants and settings (legacy Streamlit config still present, unused in FastAPI UI).
-
-**Key Variables:**
-- `PAGE_CONFIG` - Streamlit page configuration
-- `DEFAULT_TEAM` - Default team selection
-- `COLORS` - Color scheme for the rainbow tile system
-
-### `src/data_utils.py`
-Data loading and management utilities.
-
-**Key Functions:**
-- `load_data()` - Load the latest player data from CSV files
-- `run_data_update()` - Trigger a data update from ESPN and FanGraphs APIs
-- `get_latest_csv_file()` - Find the most recent data file
+FastAPI application. All routes live here. Reads from the latest `output/free_agents_ranked_*.csv` file and builds server-rendered HTML responses via Jinja2 templates.
 
 ### `src/espn_data.py`
-ESPN Fantasy Baseball API integration.
+ESPN Fantasy Baseball API integration (built on `espn-api` by cwendt94).
 
-**Key Functions:**
-- `get_all_players(league_id, season, espn_s2, swid)` - Fetch all players from ESPN league
-- `get_league_info(league_id, season, espn_s2, swid)` - Get league settings and team info
+Key functions:
+- `get_all_players(league_id, season, espn_s2, swid)` — fetch all players with ownership and roster data
+- `get_league_info(league_id, season, espn_s2, swid)` — fetch league settings and team info
 
 ### `src/fangraphs_api.py`
-FanGraphs API integration for projections and statistics.
+FanGraphs projections and current stats.
 
-**Key Functions:**
-- `get_fangraphs_merged_data()` - Fetch batting and pitching projections
-- `get_batting_projections()` - Get hitter projections
-- `get_pitching_projections()` - Get pitcher projections
+Key functions:
+- `get_fangraphs_merged_data()` — merged batting + pitching data
+- `get_batting_projections()` — hitter projections
+- `get_pitching_projections()` — pitcher projections
 
-## App Pages
+### `src/analysis.py`
+Statistical analysis: z-score normalization, composite score calculations, position scarcity adjustments.
 
-### `src/app_pages/add_drop_recommendations.py`
-Add/drop analysis and recommendations.
+### `src/data_utils.py`
+Data loading and normalization.
 
-### `src/app_pages/best_free_agents.py`
-Free agent analysis and rankings.
+Key functions:
+- `load_data()` — load the latest CSV from `output/`
+- `run_data_update()` — trigger ESPN + FanGraphs refresh and write a new CSV
+- `get_latest_csv_file()` — find the most recent data file
+- `expand_positions(position)` — normalize position strings to a list
+- `format_player_name(row)` — format display name (with injury tag if applicable)
 
-### `src/app_pages/drop_candidates.py`
-Drop candidate identification.
+### `src/draft_strategy_generator.py`
+Draft ranking logic: VADP calculations, tier assignments, position scarcity modeling, and ideal pick recommendations.
 
-### `src/app_pages/team_overview.py`
-Team roster analysis.
+Key function:
+- `analyze_and_adjust_rankings(df, ...)` — produces the ranked draft board DataFrame
 
-### `src/app_pages/player_comparison.py`
-Player comparison tools.
+## Data Format
 
-### `src/app_pages/draft_strategy.py`
-Interactive draft board and strategy tools.
-
-### `src/app_pages/waiver_trends.py`
-Waiver wire analysis.
-
-### `src/app_pages/league_analysis.py`
-League-wide analysis and insights.
-
-## Data Structures
-
-### Player Data Format
-The main data structure used throughout the application:
+The main DataFrame used across all pages is loaded from `output/free_agents_ranked_*.csv`:
 
 ```python
 {
-    'Name': str,                    # Player name
-    'Team': str,                    # MLB team
-    'position': str,                # Primary position
-    'fantasy_team': str,            # Fantasy team owner
-    'fantasy_points': float,        # Current fantasy points
-    'proj_CompositeScore': float,   # Projected composite score
-    'curr_CompositeScore': float,   # Current composite score
-    'injury_status': str,           # Injury status
-    'eligible_positions': list,     # All eligible positions
+    'display_name': str,              # Player name (with injury status if applicable)
+    'Name': str,                      # Raw player name
+    'Team': str,                      # MLB team abbreviation
+    'position': str,                  # Raw position string from ESPN
+    'norm_positions': list[str],      # Normalized list of eligible positions
+    'fantasy_team': str,              # Fantasy team name, or NaN / "Free Agent"
+    'proj_CompositeScore': float,     # Projected composite score (FanGraphs projections)
+    'curr_CompositeScore': float,     # Current composite score (season stats to date)
+    'ScoreDelta': float,              # curr - proj (performance vs. expectation)
+    'injury_status': str,             # Injury designation (e.g. "DTD", "IL10")
+    'has_valid_position': bool,       # Whether norm_positions is non-empty
 }
 ```
 
+## Output Files
+
+| Path pattern | Description |
+|---|---|
+| `output/free_agents_ranked_YYYYMMDD_HHMMSS.csv` | Timestamped player data snapshot |
+| `output/draft_strategy_YYYYMMDD_HHMMSS.xlsx` | Draft board state (picks, skips, rankings) |
+| `output/roster_settings.json` | Cached ESPN roster slot configuration |
+| `output/scoring_settings.json` | Cached ESPN scoring category configuration |
+
+The app always reads the most recently modified CSV. Draft state is always read from the most recently modified Excel file.
+
 ## Environment Variables
 
-Required environment variables (see `env.example`):
-
-- `LEAGUE_ID`: ESPN Fantasy Baseball league ID
-- `SEASON`: Fantasy season year
-- `SWID`: ESPN SWID cookie
-- `ESPN_S2`: ESPN S2 cookie 
+| Variable | Description |
+|----------|-------------|
+| `LEAGUE_ID` | ESPN Fantasy Baseball league ID |
+| `SEASON` | Fantasy season year |
+| `SWID` | ESPN SWID cookie |
+| `ESPN_S2` | ESPN S2 cookie |

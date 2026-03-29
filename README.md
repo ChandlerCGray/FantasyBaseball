@@ -1,6 +1,6 @@
 # Fantasy Baseball Hub
 
-A comprehensive, interactive fantasy baseball analysis platform that combines ESPN league data with FanGraphs projections to deliver smart recommendations, interactive draft boards, and detailed player analytics through a beautiful, mobile-optimized interface.
+A comprehensive, interactive fantasy baseball analysis platform that combines ESPN league data with FanGraphs projections to deliver recommendations, an interactive draft board, and detailed player analytics.
 
 ## Quick Start
 
@@ -10,9 +10,8 @@ A comprehensive, interactive fantasy baseball analysis platform that combines ES
    cd FantasyBaseball
    ```
 
-2. **Follow the setup guide**
+2. **Set up the environment**
    ```bash
-   # See docs/SETUP.md for detailed instructions
    python3 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
@@ -23,177 +22,106 @@ A comprehensive, interactive fantasy baseball analysis platform that combines ES
 
 3. **Launch the application**
    ```bash
-   # FastAPI (recommended)
+   # Recommended
    source venv/bin/activate
    uvicorn src.server.main:app --host 0.0.0.0 --port 8000
 
-   # Or via helper
+   # Or via helper script
    ./start
    ```
 
-4. **Access the application**
+4. **Open in your browser**
    - Local: http://localhost:8000
    - Network: http://your-ip:8000
 
 **For detailed setup instructions, see [docs/SETUP.md](docs/SETUP.md)**
 
-## Features
+## Pages
 
-### Smart Recommendations
-- **Add/Drop Suggestions** - Instant roster upgrade recommendations with clear visual hierarchy
-- **Best Free Agents** - Top available players by position with detailed stats
-- **Drop Candidates** - Identify underperforming roster players with upgrade potential
+### Dashboard (`/`)
+Position-by-position strength overview for your team. Each position card shows your team's composite score vs. the league average, a +/- percentage badge, player count, and your best/worst player. Links directly to filtered roster and upgrade views per position.
 
-### Advanced Analytics
-- **Player Comparison** - Side-by-side stat analysis with projected vs current performance
-- **League Analysis** - Team strength analysis and competitive insights
-- **Waiver Trends** - Track player movement and availability patterns
+### Add/Drop (`/add-drop`)
+Free agent rankings sorted by projected composite score. Filter by position to find targeted upgrades for your roster.
 
-### Interactive Draft Board
-- **Live Draft Interface** - Professional draft room experience with click-to-draft functionality
-- **Position Scarcity Analysis** - VADP calculations and tier-based rankings
-- **Persistent Draft State** - Auto-saves to Excel, resume drafts across sessions
-- **Real-time Updates** - Immediate visual feedback and summary statistics
+### My Team (`/team`)
+Your full roster with projected and current composite scores. Filter by position tab. Each row links to the player detail page and has a "vs" shortcut for head-to-head comparison, plus a "Find upgrade" link to the relevant Add/Drop filter.
 
-### Modern UI/UX
-- **Dark IDE Theme** - Muted, per-page accents; no emojis
-- **Mobile Optimized** - Off-canvas Filters sidebar with icon toggle
-- **Professional Styling** - Clean typography, compact cards, gradient stat indicators
-- **Interactive Components** - Sortable tables, drill-down links, compare flows
+### All Players (`/players`)
+Paginated table of every player in the league (25–200 per page). Filter by name search, position, roster status (free agent or specific team), and sort by projected score, current score, or name.
+
+### Compare (`/compare`)
+Side-by-side comparison of any two players by name. Shows team, position, projected composite score, and current composite score.
+
+### Draft Board (`/draft`)
+Full interactive draft interface:
+- **Position filter tabs**: All, Hitters, Pitchers, C, 1B, 2B, 3B, SS, OF, MI, CI, UTIL, SP, RP, P
+- **Tier filter**: dropdown to narrow by tier
+- **Player search**: filter by name within the board
+- **Position Supply panel**: shows available players vs. league demand per position
+- **Draft actions**: click to pick, skip, or undo picks
+- **Compact / Show Drafted toggles**: clean up the view mid-draft
+- **Persistent state**: draft progress auto-saves to an Excel file in `output/`
+- **Regenerate**: re-rank players based on current board state
+
+Player columns: Rank, Player, Pos, Tier, ADP, Rec, Norm, Par
+
+### League (`/league`)
+All teams ranked by average projected composite score, with average current score alongside. Click any team to drill into their full roster breakdown (`/league/team`).
+
+## Sidebar & Filters
+
+The collapsible sidebar (toggle with the filter icon on mobile) is present on every page:
+- **Data file**: shows which timestamped CSV is currently loaded
+- **Team selector**: switch between any of the 10 league teams
+- **Hide Injured**: toggle to exclude injured players from all views
+- **Update Data**: triggers a live refresh from ESPN and FanGraphs APIs
 
 ## Technology Stack
 
-- **Frontend**: FastAPI + Jinja2 (server-rendered UI)
+- **Backend**: FastAPI + Jinja2 (server-rendered HTML)
 - **Data Processing**: Pandas, NumPy
-- **APIs**: ESPN Fantasy Baseball API, FanGraphs API
-- **Visualization**: Plotly, Custom CSS
-- **Data Storage**: CSV files, Excel export
-
-## Project Structure
-
-```
-FantasyBaseball/
-├── src/                    # Application source code
-│   ├── app_pages/         # Individual analysis pages
-│   │   ├── add_drop_recommendations.py
-│   │   ├── best_free_agents.py
-│   │   ├── drop_candidates.py
-│   │   ├── team_overview.py
-│   │   ├── player_comparison.py
-│   │   ├── draft_strategy.py
-│   │   ├── waiver_trends.py
-│   │   └── league_analysis.py
-│   ├── server/
-│   │   └── main.py        # FastAPI app and routes
-│   ├── config.py          # Configuration constants
-│   ├── data_utils.py      # Data loading utilities
-│   ├── espn_data.py       # ESPN API integration
-│   ├── fangraphs_api.py   # FanGraphs API integration
-│   ├── analysis.py        # Statistical analysis
-│   ├── styles.py          # CSS styling
-│   └── ui_components.py   # Reusable UI components
-├── output/                # Generated data files
-├── sql/                   # Database schema (optional)
-├── .env                   # Environment variables (create from env.example)
-├── env.example           # Example environment file
-├── requirements.txt       # Python dependencies
-├── app.py                 # Application entry point
-├── start                  # Cross-platform launcher
-├── scripts/               # Utility scripts
-│   ├── start.py          # Unified startup script
-│   └── update_credentials.py  # ESPN credentials helper
-├── docs/                  # Documentation
-│   ├── API.md            # API documentation
-│   └── SETUP.md          # Detailed setup guide
-└── README.md             # This file
-```
+- **APIs**: ESPN Fantasy Baseball API (via `espn-api`), FanGraphs
+- **Frontend**: Custom CSS (dark IDE theme), vanilla JS
+- **Data Storage**: CSV files (`output/`), Excel export for draft state
 
 ## Configuration
 
-### Environment Variables
-
-Create a `.env` file with your ESPN Fantasy Baseball credentials:
+Create a `.env` file from `env.example`:
 
 ```bash
 LEAGUE_ID=your_league_id
-SEASON=2024
+SEASON=2026
 SWID={your_swid_cookie}
 ESPN_S2=your_espn_s2_cookie
 ```
 
 ### Getting ESPN Credentials
 
-1. **Browser Method**: 
-   - Go to ESPN Fantasy Baseball
-   - Open Developer Tools (F12)
-   - Application → Cookies → espn.com
-   - Copy `SWID` and `espn_s2` values
+1. Go to ESPN Fantasy Baseball and log in to your league
+2. Open Developer Tools (F12) → Application → Cookies → espn.com
+3. Copy `SWID` (looks like `{GUID}`) and `espn_s2` (long encoded string)
 
-2. **Helper Script**:
-   ```bash
-   python scripts/update_credentials.py
-   ```
+Or use the helper:
+```bash
+python scripts/update_credentials.py
+```
+
+### Getting Your League ID
+
+Look at your ESPN league URL: `https://fantasy.espn.com/baseball/team?leagueId=123456789`
+The number after `leagueId=` is your League ID.
 
 ## Data Sources
 
-- **ESPN Fantasy**: Live league rosters, player ownership, league settings
-- **FanGraphs**: Professional projections, current stats, advanced metrics
-- **Automated Updates**: Fresh data pulled automatically or on-demand
-
-## Key Features Explained
-
-### Interactive Draft Board
-The crown jewel of the application - a fully interactive draft interface that rivals professional draft software:
-- **Click-to-Draft**: Mark players as drafted with team assignments
-- **Persistent State**: All draft actions auto-save to Excel files
-- **Position Scarcity**: Advanced VADP calculations and tier analysis
-- **Real-time Updates**: Live summary statistics and availability tracking
-
-### Rainbow Tile System
-A unique, beautiful design system that makes data analysis enjoyable:
-- **Color-coded Tiers**: Instant visual hierarchy for player rankings
-- **Consistent Design**: Unified interface across all analysis tools
-- **Mobile Optimized**: Perfect experience on phones, tablets, and desktops
-- **Accessibility**: Proper contrast ratios and readable typography
-
-### Smart Analytics
-Advanced statistical analysis that goes beyond basic projections:
-- **Z-score Normalization**: Context-aware performance metrics
-- **Composite Scoring**: Weighted projections combined with current stats
-- **Position Adjustments**: Scarcity-based value calculations
-- **Trend Analysis**: Historical performance and projection accuracy
-
-## Important Notes
-
-- **ESPN Rate Limits**: The app respects ESPN's API limits with built-in retry logic
-- **Data Persistence**: All analysis results are timestamped and saved to `output/`
-- **Cross-Platform**: Works on Windows, macOS, and Linux
-- **Browser Compatibility**: Optimized for Chrome, Firefox, Safari, and Edge
-- **Draft Continuity**: Draft state persists across sessions and app restarts
-
-## Contributing
-
-This project is built for fantasy baseball enthusiasts who love data-driven decisions. Feel free to:
-- Report bugs or request features via GitHub issues
-- Submit pull requests for improvements
-- Share your league success stories
-
-## Documentation
-
-- **[Setup Guide](docs/SETUP.md)** - Detailed installation and configuration
-- **[Production Setup](PRODUCTION_SETUP.md)** - 24/7 service, monitoring, and management
-- **[API Documentation](docs/API.md)** - Developer reference
+- **ESPN Fantasy**: Live league rosters, player ownership, team assignments
+- **FanGraphs**: Season projections and current stats
+- **Data refresh**: Click "Update Data" in the sidebar, or automate with a cron job pointing at `POST /update`
 
 ## Acknowledgements
 
-- Special thanks to the open-source `espn-api` project by cwendt94, which makes interacting with ESPN Fantasy data possible. See `espn-api` on GitHub: https://github.com/cwendt94/espn-api
+Special thanks to the open-source `espn-api` project by cwendt94, which makes interacting with ESPN Fantasy data easier. See [espn-api on GitHub](https://github.com/cwendt94/espn-api).
 
 ## License
 
-MIT License - Use it, modify it, win your league with it!
-
-**Disclaimer**: No warranty provided. Fantasy heartbreak, championship glory, and data addiction not included but highly likely.
-
----
-
-*Built for those who believe fantasy baseball should run like a data pipeline*
+MIT License

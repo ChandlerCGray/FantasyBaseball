@@ -59,7 +59,7 @@ TEAM_ABBREVIATION_MAP = {
     # Pittsburgh Pirates
     "pit": "pit", "pirates": "pit", "pittsburgh": "pit",
     # San Diego Padres
-    "sd": "sdg", "sdg": "sdg", "padres": "sdg", "san diego": "sdg",
+    "sd": "sdg", "sdg": "sdg", "sdp": "sdg", "padres": "sdg", "san diego": "sdg",
     # Seattle Mariners
     "sea": "sea", "mariners": "sea", "seattle": "sea",
     # San Francisco Giants
@@ -142,7 +142,8 @@ def merge_on_name_team(fa_df, fg_df):
         fa_df,
         fg_df,
         on=['clean_name', 'clean_team'],
-        how='outer',
+        # Keep ESPN player pool as source of truth; avoid adding projection-only duplicates.
+        how='left',
         suffixes=('_fa', '_fg')
     )
     return fa_df, fg_df, merged
@@ -152,16 +153,27 @@ def merge_with_fallback(fa_df, fg_df, merged):
     unmatched = merged[merged["team_fg"].isna()]
     if unmatched.empty:
         return merged
+    # Name-only fallback is risky for duplicate names (e.g. multiple players named alike).
+    # Only fallback when the Fangraphs name is unique.
+    fg_name_counts = fg_df["clean_name"].value_counts(dropna=False)
+    unique_fg = fg_df[fg_df["clean_name"].map(fg_name_counts) == 1].copy()
+    if unique_fg.empty:
+        return merged
+
     fallback = pd.merge(
         fa_df,
-        fg_df.drop(columns=["clean_team"]),
+        unique_fg.drop(columns=["clean_team"]),
         on="clean_name",
         how="left",
         suffixes=("_fa", "_fg"),
     )
+    unmatched_idx = merged.index[merged["team_fg"].isna()]
+    if len(fallback) != len(merged):
+        # Defensive alignment guard: preserve existing behavior safely.
+        fallback = fallback.reindex(merged.index)
     for col in fallback.columns:
-        if isinstance(col, str) and col.endswith("_fg"):
-            merged[col] = merged[col].combine_first(fallback[col])
+        if col in merged.columns and isinstance(col, str) and col.endswith("_fg"):
+            merged.loc[unmatched_idx, col] = merged.loc[unmatched_idx, col].combine_first(fallback.loc[unmatched_idx, col])
     return merged
 
 
@@ -185,6 +197,22 @@ def merge_data(fa_df, fg_df):
     else:
         pos_series = pd.Series(["Unknown"] * len(merged), index=merged.index)
     merged["position"] = pos_series.apply(determine_position)
+
+    # Infer pitchers for ESPN "Unknown" rows when projection stats clearly indicate pitching role.
+    def _num_col(col: str) -> pd.Series:
+        if col in merged.columns:
+            return pd.to_numeric(merged[col], errors="coerce").fillna(0)
+        return pd.Series(0.0, index=merged.index, dtype=float)
+
+    proj_ip = _num_col("proj_IP")
+    proj_sv = _num_col("proj_SV")
+    proj_hld = _num_col("proj_HLD")
+    proj_gs = _num_col("proj_GS")
+    proj_pa = _num_col("proj_PA")
+    pitcher_signal = (proj_ip >= 15) | (proj_sv >= 1) | (proj_hld >= 1) | (proj_gs >= 1)
+    hitter_signal = proj_pa >= 50
+    unknown_mask = merged["position"].astype(str).eq("Unknown")
+    merged.loc[unknown_mask & pitcher_signal & ~hitter_signal, "position"] = "Pitcher"
 
     stat_cols = merged.select_dtypes(include=["number"]).columns
     merged[stat_cols] = merged[stat_cols].fillna(0)
@@ -254,6 +282,35 @@ def rank_free_agents(merged_df):
         df["Team"] = df["team_fg"]
 
     df["ScoreDelta"] = df["curr_CompositeScore"] - df["proj_CompositeScore"]
+
+    # Collapse duplicate rows (same normalized name + team) caused by source mismatches.
+    # Keep the row with the strongest projection completeness/value profile.
+    df["_name_key"] = df["Name"].apply(lambda x: unidecode.unidecode(str(x)).lower().strip())
+    df["_team_key"] = df["Team"].astype(str).str.lower().map(TEAM_ABBREVIATION_MAP).fillna(df["Team"].astype(str).str.lower())
+    adp_vals = pd.to_numeric(df.get("proj_ADP"), errors="coerce")
+    df["_adp_sort"] = adp_vals.where(adp_vals > 0, 9999.0)
+    df = df.sort_values(
+        by=["_name_key", "_team_key", "proj_stats_used", "proj_CompositeScore", "_adp_sort"],
+        ascending=[True, True, False, False, True],
+        na_position="last",
+    )
+    df = df.drop_duplicates(subset=["_name_key", "_team_key"], keep="first")
+    if "player_id" in df.columns:
+        pid = pd.to_numeric(df["player_id"], errors="coerce").fillna(0)
+        has_pid = pid > 0
+        with_pid = df[has_pid].copy()
+        no_pid = df[~has_pid].copy()
+        if not with_pid.empty:
+            with_pid = with_pid.sort_values(
+                by=["player_id", "proj_stats_used", "proj_CompositeScore", "_adp_sort"],
+                ascending=[True, False, False, True],
+                na_position="last",
+            ).drop_duplicates(subset=["player_id"], keep="first")
+            # If we have an ESPN player_id-backed row, drop name-only ghosts for that same name.
+            name_keys_with_pid = set(with_pid["_name_key"].astype(str))
+            no_pid = no_pid[~no_pid["_name_key"].astype(str).isin(name_keys_with_pid)]
+        df = pd.concat([with_pid, no_pid], ignore_index=True)
+    df = df.drop(columns=["_name_key", "_team_key", "_adp_sort"], errors="ignore")
     
     # Add normalized value scores for better cross-position comparison
     df = add_normalized_value_scores(df)

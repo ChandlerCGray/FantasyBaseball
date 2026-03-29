@@ -8,7 +8,7 @@ from analysis import (
     rank_free_agents,
     determine_position
 )
-from espn_data import get_all_players
+from espn_data import get_all_players, get_roster_settings, get_scoring_settings
 from fangraphs_api import get_fangraphs_merged_data
 
 # Logging setup
@@ -95,6 +95,12 @@ def fetch_data():
     if fa_df.empty:
         logger.error("No players retrieved from ESPN.")
         return None, None, None
+
+    logger.info("Fetching roster settings from ESPN...")
+    get_roster_settings(league_id, season, espn_s2, swid, OUTPUT_DIR)
+
+    logger.info("Fetching scoring settings from ESPN...")
+    get_scoring_settings(league_id, season, espn_s2, swid, OUTPUT_DIR)
     
     logger.info("Fetching FanGraphs projections and stats...")
     bat_df, pit_df = get_fangraphs_merged_data()

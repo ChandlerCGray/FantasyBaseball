@@ -101,6 +101,16 @@ def prepare_data_for_draft_analysis(df):
         if old_col in draft_df.columns:
             draft_df[new_col] = draft_df[old_col]
     
+    # Prefer ESPN ADP when present; otherwise fall back to projection ADP.
+    if 'ADP' not in draft_df.columns:
+        for src in ['espn_ADP', 'proj_ADP', 'ADP']:
+            if src in draft_df.columns:
+                vals = pd.to_numeric(draft_df[src], errors='coerce')
+                vals = vals.where(vals > 0)
+                if vals.notna().any():
+                    draft_df['ADP'] = vals
+                    break
+
     # Add required columns with defaults if they don't exist
     required_columns = {
         'AB': 'proj_AB',

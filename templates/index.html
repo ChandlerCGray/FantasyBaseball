@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Fantasy Baseball Hub</title>
-    <link rel="stylesheet" href="/static/css/base.css" />
+    <link rel="stylesheet" href="/static/css/base.css?v=39" />
   </head>
   <body class="view-{{ view }}">
     <div class="app">
@@ -39,43 +39,114 @@
                 <path d="M4 7h16v2H4zM7 11h10v2H7zM10 15h4v2h-4z" fill="currentColor"/>
               </svg>
             </button>
-            <a class="tab {% if view=='add_drop' %}active{% endif %}" href="/?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Add/Drop</a>
+            <a class="tab {% if view=='dashboard' %}active{% endif %}" href="/?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Dashboard</a>
+            <a class="tab {% if view=='add_drop' %}active{% endif %}" href="/add-drop?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Add/Drop</a>
             <a class="tab {% if view=='team' %}active{% endif %}" href="/team?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">My Team</a>
             <a class="tab {% if view=='players' %}active{% endif %}" href="/players?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">All Players</a>
             <a class="tab {% if view=='compare' %}active{% endif %}" href="/compare?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Compare</a>
-            <a class="tab {% if view=='drop_candidates' %}active{% endif %}" href="/drop-candidates?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Drop Candidates</a>
+
+            <a class="tab {% if view=='draft' %}active{% endif %}" href="/draft?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Draft</a>
             <a class="tab {% if view=='league' %}active{% endif %}" href="/league?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">League</a>
           </nav>
         </header>
         <section class="panel panel-{{ view }}">
-          <div class="panel-title">{% if view=='add_drop' %}Add/Drop Recommendations{% elif view=='free_agents' %}Free Agents{% elif view=='drop_candidates' %}Drop Candidates{% elif view=='team' %}My Team{% elif view=='compare' %}Compare{% elif view=='league' %}League{% elif view=='league_team' %}Team Breakdown{% elif view=='players' %}All Players{% else %}Add/Drop Recommendations{% endif %}</div>
+          <div class="panel-title">{% if view=='dashboard' %}Dashboard{% elif view=='add_drop' %}Add/Drop Recommendations{% elif view=='free_agents' %}Free Agents{% elif view=='team' %}My Team{% elif view=='compare' %}Compare{% elif view=='league' %}League{% elif view=='league_team' %}Team Breakdown{% elif view=='players' %}All Players{% elif view=='draft' %}Draft Board{% else %}Dashboard{% endif %}</div>
           <div id="root" class="panel-body">
-            {% if view=='add_drop' and upgrades and upgrades|length > 0 %}
-              {% for u in upgrades %}
-                <div class="card">
-                  <div class="row">
-                    <div class="col">
-                      <div class="kicker add">Add</div>
-                      <div class="name">{{ u.add.display_name }}</div>
-                      <div class="meta">Team: {{ u.add.Team or 'Unknown' }}</div>
-                      <div class="meta">Score: {{ '%.3f'|format(u.add.proj_CompositeScore) }}</div>
+            {% if view in ('add_drop', 'team') and positions is defined and positions %}
+            {% set view_path = {'add_drop': '/add-drop', 'team': '/team'}[view] %}
+            <div class="pos-pills">
+              <a class="pill {% if not pos %}active{% endif %}" href="{{ view_path }}?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}">All</a>
+              {% for p in positions %}
+              <a class="pill {% if pos==p %}active{% endif %}" href="{{ view_path }}?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&pos={{p}}">{{p}}</a>
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% if view=='dashboard' and dash %}
+              <h3 class="dash-heading">Position Strength</h3>
+              <div class="dash-grid">
+                {% for p in dash.positions %}
+                <div class="dash-card" data-badge="{{ p.badge }}">
+                  <div class="dash-card-header">
+                    <span class="dash-pos">{{ p.pos }}</span>
+                    <span class="badge {{ p.badge }}">{{ '+' if p.strength_pct >= 100 else '' }}{{ p.strength_pct - 100 }}%</span>
+                  </div>
+                  <div class="dash-card-body">
+                    {% set max_val = [p.team_avg, p.league_avg]|max %}
+                    <div class="dash-bar-row">
+                      <span class="dash-bar-label">Team</span>
+                      <div class="dash-bar"><div class="dash-bar-fill" style="width:{{ (p.team_avg / max_val * 100)|round|int if max_val > 0 else 0 }}%"></div></div>
+                      <span class="dash-bar-val">{{ '%.3f'|format(p.team_avg) }}</span>
                     </div>
-                    <div class="col arrow">→</div>
-                    <div class="col">
-                      <div class="kicker drop">Drop</div>
-                      <div class="name">{{ u.drop.display_name }}</div>
-                      <div class="meta">Roster</div>
-                      <div class="meta">Score: {{ '%.3f'|format(u.drop.proj_CompositeScore) }}</div>
+                    <div class="dash-bar-row">
+                      <span class="dash-bar-label">Lg Avg</span>
+                      <div class="dash-bar"><div class="dash-bar-fill league" style="width:{{ (p.league_avg / max_val * 100)|round|int if max_val > 0 else 0 }}%"></div></div>
+                      <span class="dash-bar-val">{{ '%.3f'|format(p.league_avg) }}</span>
                     </div>
-                    <div class="col gain">+{{ '%.3f'|format(u.gain) }}
-                      <a class="compare-link" href="/compare?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}&p1={{ u.add.display_name }}&p2={{ u.drop.display_name }}">Compare</a>
+                    <div class="dash-card-meta">
+                      {{ p.count }} player{{ 's' if p.count != 1 else '' }}
+                      {% if p.best %} · Best: <a class="link" href="/player?name={{ p.best }}">{{ p.best }}</a>{% endif %}
+                      {% if p.worst and p.worst != p.best %} · Worst: <a class="link" href="/player?name={{ p.worst }}">{{ p.worst }}</a>{% endif %}
+                    </div>
+                    <div class="dash-card-actions">
+                      <a class="link" href="/team?team={{ selected_team }}&hideInjured={{ 'true' if hide_injured else 'false' }}&pos={{ p.pos }}">View roster →</a>
+                      <a class="link" href="/add-drop?team={{ selected_team }}&hideInjured={{ 'true' if hide_injured else 'false' }}&pos={{ p.pos }}">Find upgrades →</a>
                     </div>
                   </div>
                 </div>
-              {% endfor %}
+                {% endfor %}
+              </div>
+              <h3 class="dash-heading">Quick Actions</h3>
+              <div class="dash-actions">
+                {% if dash.top_upgrade %}
+                <div class="card">
+                  <div class="kicker add">Top Upgrade Available</div>
+                  <div class="name">Add {{ dash.top_upgrade.add.display_name }} ({{ dash.top_upgrade.pos }})</div>
+                  <div class="meta">Drop {{ dash.top_upgrade.drop.display_name }} · +{{ '%.3f'|format(dash.top_upgrade.gain) }}</div>
+                  <a class="link" href="/add-drop?team={{ selected_team }}&hideInjured={{ 'true' if hide_injured else 'false' }}">View all →</a>
+                </div>
+                {% endif %}
+                {% if dash.replace_weakest %}
+                <div class="card">
+                  <div class="kicker drop">Replace Weakest Spot</div>
+                  <div class="name">Add {{ dash.replace_weakest.add.display_name }} ({{ dash.replace_weakest.pos }})</div>
+                  <div class="meta">Drop {{ dash.replace_weakest.drop.display_name }} · +{{ '%.3f'|format(dash.replace_weakest.gain) }}</div>
+                  <a class="link" href="/add-drop?team={{ selected_team }}&hideInjured={{ 'true' if hide_injured else 'false' }}">View all →</a>
+                </div>
+                {% endif %}
+              </div>
             {% endif %}
-            {% if view=='add_drop' and fa %}
-              <h3 style="margin:12px 0 6px 0;color:var(--accent)">Available Free Agents</h3>
+            {% if view=='add_drop' %}
+              {% if upgrades and upgrades|length > 0 %}
+              <h3 class="dash-heading">Recommended Swaps</h3>
+              {% for u in upgrades %}
+                <div class="swap-card">
+                  <div class="swap-header">
+                    <span class="swap-pos">{{ u.pos }}</span>
+                    <span class="swap-gain">+{{ '%.3f'|format(u.gain) }}</span>
+                  </div>
+                  <div class="swap-body">
+                    <div class="swap-player swap-add">
+                      <div class="swap-label add">Add</div>
+                      <div class="swap-name"><a class="link" href="/player?name={{ u.add.display_name }}">{{ u.add.display_name }}</a></div>
+                      <div class="swap-detail">{{ u.add.Team or '?' }} · Proj {{ '%.3f'|format(u.add.proj_CompositeScore) }}</div>
+                    </div>
+                    <div class="swap-arrow">→</div>
+                    <div class="swap-player swap-drop">
+                      <div class="swap-label drop">Drop</div>
+                      <div class="swap-name"><a class="link" href="/player?name={{ u.drop.display_name }}">{{ u.drop.display_name }}</a></div>
+                      <div class="swap-detail">Roster · Proj {{ '%.3f'|format(u.drop.proj_CompositeScore) }}</div>
+                    </div>
+                  </div>
+                  <div class="swap-footer">
+                    <a class="compare-link" href="/compare?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}&p1={{ u.add.display_name }}&p2={{ u.drop.display_name }}">Compare side-by-side</a>
+                  </div>
+                </div>
+              {% endfor %}
+              {% else %}
+              <div class="empty" style="margin-bottom:12px">No clear upgrades for the current filters.</div>
+              {% endif %}
+              {% if fa %}
+              <h3 class="dash-heading">Available Free Agents</h3>
               <div class="table" data-sortable="true">
                 <div class="trow thead">
                   <div class="sortable" data-type="string">Name</div>
@@ -86,7 +157,7 @@
                 </div>
                 {% for p in fa %}
                   <div class="trow">
-                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a></div>
+                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a>{% if upgrade_names is defined and p.display_name in upgrade_names %}<span class="badge great">Upgrade</span>{% endif %} <a class="cmp-btn" href="/compare?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&p1={{ p.display_name }}" title="Compare">vs</a></div>
                   <div>{{ p.Team }}</div>
                   <div>{{ p.position }}</div>
                   <div>{{ '%.3f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '' }}</div>
@@ -94,60 +165,44 @@
                 </div>
                 {% endfor %}
               </div>
-            {% elif view=='drop_candidates' and drops %}
-              <div class="table" data-sortable="true">
-                <div class="trow thead">
-                  <div class="sortable" data-type="string">Name</div>
-                  <div class="sortable" data-type="string">Team</div>
-                  <div class="sortable" data-type="string">Pos</div>
-                  <div class="sortable" data-type="number">Proj</div>
-                  <div class="sortable" data-type="number">Curr</div>
-                </div>
-                {% for p in drops %}
-                <div class="trow">
-                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a></div>
-                  <div>{{ p.Team }}</div>
-                  <div>{{ p.position }}</div>
-                  <div>{{ '%.3f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '' }}</div>
-                  <div>{{ '%.3f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '' }}</div>
-                </div>
-                {% endfor %}
-              </div>
+              {% endif %}
             {% elif view=='team' and roster %}
-              <div class="table" data-sortable="true">
+              <div class="table roster-table" data-sortable="true">
                 <div class="trow thead">
                   <div class="sortable" data-type="string">Name</div>
                   <div class="sortable" data-type="string">Team</div>
                   <div class="sortable" data-type="string">Pos</div>
                   <div class="sortable" data-type="number">Proj</div>
                   <div class="sortable" data-type="number">Curr</div>
+                  <div></div>
                 </div>
                 {% for p in roster %}
                 <div class="trow">
-                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a></div>
+                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a> <a class="cmp-btn" href="/compare?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&p1={{ p.display_name }}" title="Compare">vs</a></div>
                   <div>{{ p.Team }}</div>
                   <div>{{ p.position }}</div>
                   <div>{{ '%.3f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '' }}</div>
                   <div>{{ '%.3f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '' }}</div>
+                  <div><a class="upgrade-link" href="/add-drop?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&pos={{ p.position.split(',')[0].strip() }}">Find upgrade →</a></div>
                 </div>
                 {% endfor %}
               </div>
             {% elif view=='league' and league %}
-              <div class="table" data-sortable="true">
+              <div class="table league-table" data-sortable="true">
                 <div class="trow thead">
+                  <div class="sortable" data-type="number">#</div>
                   <div class="sortable" data-type="string">Team</div>
                   <div class="sortable" data-type="number">Players</div>
                   <div class="sortable" data-type="number">Avg Proj</div>
                   <div class="sortable" data-type="number">Avg Curr</div>
-                  <div></div>
                 </div>
                 {% for r in league %}
                 <div class="trow">
+                  <div>{{ loop.index }}</div>
                   <div><a class="link" href="/league/team?team={{ r.fantasy_team }}&hideInjured={{ 'true' if hide_injured else 'false'}}&minScore={{min_score}}">{{ r.fantasy_team }}</a></div>
                   <div>{{ r.players }}</div>
                   <div>{{ '%.3f'|format(r.proj_mean) }}</div>
                   <div>{{ '%.3f'|format(r.curr_mean) }}</div>
-                  <div></div>
                 </div>
                 {% endfor %}
               </div>
@@ -157,8 +212,8 @@
                 <input type="hidden" name="hideInjured" value="{{ 'true' if hide_injured else 'false'}}" />
                 <input type="hidden" name="minScore" value="{{min_score}}" />
                 <div class="cmp-grid">
-                  <input name="p1" placeholder="Player 1" value="{{ p1 or '' }}" />
-                  <input name="p2" placeholder="Player 2" value="{{ p2 or '' }}" />
+                  <div class="ac-wrap"><input name="p1" placeholder="Player 1" value="{{ p1 or '' }}" autocomplete="off" class="ac-input" /><div class="ac-list"></div></div>
+                  <div class="ac-wrap"><input name="p2" placeholder="Player 2" value="{{ p2 or '' }}" autocomplete="off" class="ac-input" /><div class="ac-list"></div></div>
                   <button class="primary" type="submit">Compare</button>
                 </div>
               </form>
@@ -187,6 +242,180 @@
                   </div>
                 </div>
               </div>
+            {% elif view=='draft' %}
+              {% if not has_draft %}
+              <div class="draft-empty">
+                <p>No draft strategy generated yet.</p>
+                <form method="post" action="/draft/generate" class="draft-gen-form">
+                  <button class="primary" type="submit" id="genBtn">Generate Draft Strategy</button>
+                </form>
+              </div>
+              {% else %}
+              <div class="draft-controls">
+                <div class="draft-filter-row">
+                  <input id="draftSearch" placeholder="Search player" autocomplete="off" />
+                  <select id="draftTierFilter">
+                    <option value="">All Tiers</option>
+                    {% for t in draft_tiers %}
+                    <option value="{{t}}">Tier {{t}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="draft-actions-row">
+                  <form method="post" action="/draft/generate" style="display:inline">
+                    <button class="primary draft-regen" type="submit" id="genBtn">Regenerate</button>
+                  </form>
+                  <div class="draft-type-tabs">
+                    <button class="draft-type-tab active" data-type="all" type="button">All</button>
+                    <button class="draft-type-tab" data-type="hitter" type="button">Hitters</button>
+                    <button class="draft-type-tab" data-type="pitcher" type="button">Pitchers</button>
+                    {% for p in draft_positions %}
+                    <button class="draft-type-tab draft-pos-tab" data-pos="{{ p }}" type="button">{{ p }}</button>
+                    {% endfor %}
+                  </div>
+                  <label class="draft-toggle"><input type="checkbox" id="draftCompact" /> Compact</label>
+                  <label class="draft-toggle"><input type="checkbox" id="draftShowDrafted" /> Show Drafted</label>
+                  <span class="draft-file-label">{{ draft_file }}</span>
+                </div>
+              </div>
+              <div class="draft-supply">
+                <div class="draft-supply-head">Position Supply (Available vs League Demand)</div>
+                <div class="draft-supply-grid">
+                  {% for s in draft_summary.position_supply or [] %}
+                  <div class="draft-supply-row" data-slot="{{ s.slot }}" data-demand="{{ s.demand }}">
+                    <div class="draft-supply-meta">
+                      <span class="draft-supply-pos">{{ s.slot }}</span>
+                      <span class="draft-supply-count"><span class="draft-supply-available">{{ s.available }}</span> / {{ s.demand }}</span>
+                    </div>
+                    <div class="draft-supply-bar supply-{{ s.status }}">
+                      <i style="width:{{ s.pct }}%"></i>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              <!-- Draft Compare Panel (hidden until 2 players selected) -->
+              <div class="draft-compare" id="draftCompare" style="display:none">
+                <div class="draft-compare-header">
+                  <h3 class="dash-heading" style="margin:0">Compare</h3>
+                  <button class="draft-btn" id="draftCompareClear">Clear</button>
+                </div>
+                <div class="draft-compare-body" id="draftCompareBody"></div>
+              </div>
+              <div class="draft-layout">
+              <!-- Draft Board (left) -->
+              <div class="draft-board-col">
+              <div class="table draft-table" data-sortable="true">
+                <div class="trow thead">
+                  <div class="sortable" data-type="number">Rank</div>
+                  <div class="sortable" data-type="string">Player</div>
+                  <div class="sortable" data-type="string">Pos</div>
+                  <div class="sortable" data-type="number">Tier</div>
+                  <div class="sortable" data-type="number">ADP</div>
+                  <div class="sortable" data-type="number">Rec</div>
+                  <div class="sortable" data-type="number">Norm</div>
+                  <div class="sortable" data-type="number">PAR</div>
+                  <div></div>
+                </div>
+                {% for p in board %}
+                <div class="draft-row-wrap {% if p.is_drafted %}drafted{% endif %}"
+                     data-stats='{% if p.is_pitcher %}{"IP":{{ p.IP if p.IP is not none else "null" }},"FIP":{{ p.FIP if p.FIP is not none else "null" }},"WHIP":{{ p.WHIP if p.WHIP is not none else "null" }},"K-BB%":{{ p['K-BB%'] if p['K-BB%'] is not none else "null" }},"SV":{{ p.SV if p.SV is not none else "null" }}}{% else %}{"AB":{{ p.AB if p.AB is not none else "null" }},"wOBA":{{ p.wOBA if p.wOBA is not none else "null" }},"wRC+":{{ p['wRC+'] if p['wRC+'] is not none else "null" }},"ISO":{{ p.ISO if p.ISO is not none else "null" }},"wBsR":{{ p.wBsR if p.wBsR is not none else "null" }}}{% endif %}'
+                     data-pcts='{{ p.pcts|tojson }}'
+                     data-pos="{{ p.position or '' }}"
+                     data-eligible='{{ p.eligible_positions|tojson }}'
+                     data-adp="{{ p.ADP if p.ADP is not none else '' }}"
+                     data-is-pitcher="{{ p.is_pitcher|int }}">
+                  <div class="trow draft-row-main" data-player="{{ p.Name }}">
+                    <div>{{ p.Adjusted_Rank|int if p.Adjusted_Rank else '' }}</div>
+                    <div>
+                      <button class="cmp-btn draft-cmp-btn" data-name="{{ p.Name }}" title="Compare">vs</button>
+                      <span class="draft-player-name">{{ p.Name }}</span>
+                      {% if p.is_drafted %}<span class="badge avg">{{ p.Drafted }}</span>{% endif %}
+                    </div>
+                    <div>{{ p.position or '' }}</div>
+                    <div><span class="draft-tier tier-{{ p.Tier|int if p.Tier else 0 }}">T{{ p.Tier|int if p.Tier else '?' }}</span></div>
+                    <div>{% if p.ADP %}{{ p.ADP|int }}{% endif %}</div>
+                    <div class="{% if p.Recommended_Pick and p.ADP and p.Recommended_Pick < p.ADP %}vadp-positive{% elif p.Recommended_Pick and p.ADP and p.Recommended_Pick > p.ADP %}vadp-negative{% endif %}">{% if p.Recommended_Pick %}{{ p.Recommended_Pick|int }}{% endif %}</div>
+                    <div>{{ '%.2f'|format(p.Composite_ZScore) if p.Composite_ZScore is not none else '' }}</div>
+                    <div>{{ '%.1f'|format(p.PAR) if p.PAR is not none else '' }}</div>
+                    <div class="draft-action-cell">
+                      {% if p.is_drafted %}
+                      <button class="draft-btn undraft-btn" data-name="{{ p.Name }}">Undo</button>
+                      {% else %}
+                      <button class="draft-btn pick-btn" data-name="{{ p.Name }}">Draft</button>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="draft-detail">
+                    <div class="draft-detail-inner">
+                      <div class="draft-detail-stats">
+                        {% if p.is_pitcher %}
+                          {% set stats = [("IP", p.IP, "%.1f"), ("FIP", p.FIP, "%.2f"), ("WHIP", p.WHIP, "%.2f"), ("K-BB%", p['K-BB%'], "%.1f"), ("SV", p.SV, "%d")] %}
+                        {% else %}
+                          {% set stats = [("AB", p.AB, "%d"), ("wOBA", p.wOBA, "%.3f"), ("wRC+", p['wRC+'], "%d"), ("ISO", p.ISO, "%.3f"), ("wBsR", p.wBsR, "%.1f")] %}
+                        {% endif %}
+                        {% for label, val, fmt in stats %}
+                        <div class="draft-stat-row">
+                          <div class="draft-stat-row-header">
+                            <span class="draft-stat-label">{{ label }}</span>
+                            <span class="draft-stat-value">{% if val is not none %}{{ fmt|format(val) }}{% else %}-{% endif %}</span>
+                          </div>
+                          {% set pct = p.pcts.get(label, 0) if p.pcts else 0 %}
+                          <div class="mini {% if pct >= 75 %}great{% elif pct >= 50 %}good{% elif pct >= 35 %}avg{% else %}concern{% endif %}">
+                            <i style="width:{{ pct }}%"></i>
+                          </div>
+                        </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% if not board %}
+              <div class="empty" style="margin-top:12px">No players match the current filters.</div>
+              {% endif %}
+              </div>
+              <!-- Right sidebar: Ideal Draft + Draft Log -->
+              <div class="draft-log-col">
+                <div class="ideal-draft-panel">
+                  <div class="ideal-draft-head">
+                    <h3 class="dash-heading" style="margin:0">Ideal Draft</h3>
+                    <div class="ideal-draft-controls">
+                      <label class="ideal-draft-label">Pick #</label>
+                      <input type="number" id="idealPickPos" class="ideal-pick-input" min="1" max="10" value="1" />
+                      <button class="draft-btn" id="idealDraftRun">Simulate</button>
+                    </div>
+                  </div>
+                  <div class="ideal-draft-body" id="idealDraftBody">
+                    <div class="empty">Set your pick # and hit Simulate.</div>
+                  </div>
+                </div>
+                <div class="draft-log-panel">
+                  <div class="draft-log-head">
+                    <h3 class="dash-heading" style="margin:0">Draft Log</h3>
+                    <button class="draft-btn" id="skipPickBtn">Skip Pick</button>
+                  </div>
+                  <div class="draft-log-list" id="draftLogList">
+                    {% if draft_log %}
+                    {% for entry in draft_log|reverse %}
+                    <div class="draft-log-entry" data-log-name="{{ entry.name }}">
+                      <span class="draft-log-pick">{{ entry.pick }}</span>
+                      <div class="draft-log-info">
+                        <span class="draft-log-name">{{ entry.name }}</span>
+                        <span class="draft-log-meta">R{{ entry.round }} · Slot {{ entry.team_slot }} · {{ entry.position }}</span>
+                      </div>
+                      <button class="draft-log-undo" data-name="{{ entry.name }}" title="Undo">✕</button>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="empty">No picks yet.</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              </div>
+              {% endif %}
             {% elif view=='league_team' and breakdown %}
               <div class="table" data-sortable="true" style="margin-bottom:12px">
                 <div class="trow thead"><div class="sortable" data-type="string">Hitter Stat</div><div class="sortable" data-type="number">Avg</div><div></div><div></div><div></div></div>
@@ -211,7 +440,7 @@
                 {% endfor %}
               </div>
             {% else %}
-              <div class="empty">No clear upgrades for the current filters.</div>
+              <div class="empty">No data available for this view.</div>
             {% endif %}
             {% if view=='players' %}
               <form class="cmp" method="get" action="/players" style="margin-bottom:10px">
@@ -219,7 +448,7 @@
                 <input type="hidden" name="hideInjured" value="{{ 'true' if hide_injured else 'false'}}" />
                 <input type="hidden" name="minScore" value="{{min_score}}" />
                 <div class="cmp-grid">
-                  <input name="q" placeholder="Search name" value="{{ q or '' }}" />
+                  <div class="ac-wrap"><input name="q" placeholder="Search name" value="{{ q or '' }}" autocomplete="off" class="ac-input" /><div class="ac-list"></div></div>
                   <select name="pos">
                     <option value="">Any Position</option>
                     {% for p in positions %}
@@ -256,7 +485,7 @@
                 </div>
                 {% for p in players %}
                 <div class="trow">
-                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a></div>
+                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a> <a class="cmp-btn" href="/compare?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&p1={{ p.display_name }}" title="Compare">vs</a></div>
                   <div>{{ p.Team }}</div>
                   <div>{{ p.position }}</div>
                   <div>{{ '%.3f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '' }}</div>
@@ -300,6 +529,19 @@
               const desc = h.classList.toggle('sort-desc');
               headers.forEach(x=>x.classList.remove('sort-active'));
               h.classList.add('sort-active');
+              if(table.classList.contains('draft-table')){
+                const wraps = Array.from(table.querySelectorAll('.draft-row-wrap'));
+                const getText = (wrap) => (wrap.querySelector('.draft-row-main')?.children[idx]?.textContent || '').trim();
+                wraps.sort((a,b)=>{
+                  const av = parseCell(getText(a), type);
+                  const bv = parseCell(getText(b), type);
+                  if(av < bv) return desc ? 1 : -1;
+                  if(av > bv) return desc ? -1 : 1;
+                  return 0;
+                });
+                wraps.forEach(w=>table.appendChild(w));
+                return;
+              }
               const rows = Array.from(table.querySelectorAll('.trow:not(.thead)'));
               const getText = (row) => (row.children[idx]?.textContent || '').trim();
               rows.sort((a,b)=>{
@@ -341,8 +583,490 @@
       };
       sidebarToggle?.addEventListener('click', () => toggleSidebar());
       backdrop?.addEventListener('click', () => toggleSidebar(false));
+
+      // ── Draft board: unified client-side filters ──
+      (function(){
+        const table = document.querySelector('.draft-table');
+        if(!table) return;
+
+        const searchInput = document.getElementById('draftSearch');
+        const tierSelect  = document.getElementById('draftTierFilter');
+        const compactCb   = document.getElementById('draftCompact');
+        const showDraftCb = document.getElementById('draftShowDrafted');
+        const rows = Array.from(document.querySelectorAll('.draft-row-wrap'));
+        const typeTabs = document.querySelectorAll('.draft-type-tab[data-type]');
+        const posTabs = document.querySelectorAll('.draft-type-tab[data-pos]');
+        const supplyRows = Array.from(document.querySelectorAll('.draft-supply-row'));
+        let activeType = 'all';
+        let activePos = '';
+        const focusSearch = () => {
+          if(!searchInput) return;
+          const ae = document.activeElement;
+          if(ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT' || ae.isContentEditable)) return;
+          searchInput.focus();
+        };
+
+        const parseEligible = (wrap) => {
+          try {
+            const parsed = JSON.parse(wrap.dataset.eligible || '[]');
+            if(Array.isArray(parsed)) return parsed.map(p => String(p).trim()).filter(Boolean);
+          } catch(e) {}
+          return [];
+        };
+
+        function slotAccepts(slot, eligible, isPitcher){
+          if(slot === 'MI') return eligible.some(p => ['MI', '2B', 'SS'].includes(p));
+          if(slot === 'CI') return eligible.some(p => ['CI', '1B', '3B'].includes(p));
+          if(slot === 'UTIL') return !isPitcher;
+          if(slot === 'P') return isPitcher || eligible.some(p => ['P', 'SP', 'RP'].includes(p));
+          return eligible.includes(slot);
+        }
+
+        function updatePositionSupplyBars(){
+          if(!supplyRows.length) return;
+          supplyRows.forEach(row => {
+            const slot = row.dataset.slot || '';
+            const demand = parseInt(row.dataset.demand || '0', 10) || 0;
+            let availableCount = 0;
+            rows.forEach(wrap => {
+              if(wrap.classList.contains('drafted')) return;
+              const eligible = parseEligible(wrap);
+              const isPitcher = wrap.dataset.isPitcher === '1';
+              if(slotAccepts(slot, eligible, isPitcher)) availableCount += 1;
+            });
+
+            const availEl = row.querySelector('.draft-supply-available');
+            if(availEl) availEl.textContent = String(availableCount);
+
+            const ratio = demand > 0 ? (availableCount / demand) : 0;
+            const pct = Math.max(0, Math.min(100, Math.round(ratio * 100)));
+            const fill = row.querySelector('.draft-supply-bar i');
+            if(fill) fill.style.width = pct + '%';
+
+            const bar = row.querySelector('.draft-supply-bar');
+            if(bar){
+              bar.classList.remove('supply-low', 'supply-mid', 'supply-high');
+              if(ratio < 1) bar.classList.add('supply-low');
+              else if(ratio < 1.5) bar.classList.add('supply-mid');
+              else bar.classList.add('supply-high');
+            }
+          });
+        }
+
+        function updateValueHighlights(){
+          const draftedCount = rows.filter(w => w.classList.contains('drafted')).length;
+          rows.forEach(wrap => {
+            wrap.classList.remove('value-mid', 'value-strong');
+            if(wrap.classList.contains('drafted')) return;
+            const adp = parseFloat(wrap.dataset.adp || '');
+            if(!Number.isFinite(adp) || adp <= 0) return;
+            const adpDiff = draftedCount - adp;
+            if(adpDiff >= 10){
+              wrap.classList.add('value-strong');
+            } else if(adpDiff >= 5){
+              wrap.classList.add('value-mid');
+            }
+          });
+        }
+
+        // Restore persisted toggles
+        if(compactCb){
+          compactCb.checked = localStorage.getItem('draftCompact') === '1';
+          table.classList.toggle('compact', compactCb.checked);
+        }
+        if(showDraftCb){
+          showDraftCb.checked = localStorage.getItem('draftShowDrafted') === '1';
+        }
+
+        function applyFilters(){
+          const q    = (searchInput?.value || '').trim().toLowerCase();
+          const tier = tierSelect?.value || '';
+          const showDrafted = showDraftCb?.checked || false;
+
+          rows.forEach(wrap => {
+            const main = wrap.querySelector('.draft-row-main');
+            const name = (wrap.querySelector('.draft-player-name')?.textContent || '').toLowerCase();
+            const rowPos = (main?.children[2]?.textContent || '').trim().toLowerCase();
+            const rowTier = (main?.querySelector('.draft-tier')?.textContent || '').replace('T','').trim();
+            const isDrafted = wrap.classList.contains('drafted');
+            const isPitcher = wrap.dataset.isPitcher === '1';
+            const eligible = parseEligible(wrap);
+
+            let show = true;
+            if(q && !name.includes(q) && !rowPos.includes(q)) show = false;
+            if(tier && rowTier !== tier) show = false;
+            if(!showDrafted && isDrafted) show = false;
+            if(activeType === 'hitter' && isPitcher) show = false;
+            if(activeType === 'pitcher' && !isPitcher) show = false;
+            if(activePos && !eligible.includes(activePos)) show = false;
+
+            wrap.style.display = show ? '' : 'none';
+          });
+        }
+
+        // Type tabs
+        typeTabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            typeTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeType = tab.dataset.type;
+            applyFilters();
+          });
+        });
+        posTabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            const selected = tab.dataset.pos || '';
+            if(activePos === selected){
+              activePos = '';
+              tab.classList.remove('active');
+            } else {
+              posTabs.forEach(t => t.classList.remove('active'));
+              tab.classList.add('active');
+              activePos = selected;
+            }
+            applyFilters();
+          });
+        });
+
+        // Bind all controls
+        let debounce;
+        searchInput?.addEventListener('input', () => { clearTimeout(debounce); debounce = setTimeout(applyFilters, 150); });
+        searchInput?.addEventListener('keydown', e => { if(e.key === 'Enter') e.preventDefault(); });
+        tierSelect?.addEventListener('change', applyFilters);
+        compactCb?.addEventListener('change', () => {
+          table.classList.toggle('compact', compactCb.checked);
+          localStorage.setItem('draftCompact', compactCb.checked ? '1' : '0');
+        });
+        showDraftCb?.addEventListener('change', () => {
+          localStorage.setItem('draftShowDrafted', showDraftCb.checked ? '1' : '0');
+          applyFilters();
+        });
+
+        // Apply on load
+        applyFilters();
+        updatePositionSupplyBars();
+        updateValueHighlights();
+        setTimeout(focusSearch, 0);
+        document.addEventListener('click', () => setTimeout(focusSearch, 0));
+
+        // ── Draft Compare ──
+        const comparePanel = document.getElementById('draftCompare');
+        const compareBody = document.getElementById('draftCompareBody');
+        const compareClear = document.getElementById('draftCompareClear');
+        let compareSlots = []; // [{name, stats, pcts, isPitcher, wrap}]
+
+        function renderCompare(){
+          if(compareSlots.length < 2){ comparePanel.style.display = 'none'; return; }
+          comparePanel.style.display = '';
+          const [a, b] = compareSlots;
+          const allKeys = [...new Set([...Object.keys(a.stats), ...Object.keys(b.stats)])];
+          // Format helpers
+          const fmt = (key, v) => {
+            if(v === null || v === undefined) return '-';
+            if(['wOBA','ISO'].includes(key)) return v.toFixed(3);
+            if(['FIP','WHIP'].includes(key)) return v.toFixed(2);
+            if(['wBsR','K-BB%','IP'].includes(key)) return v.toFixed(1);
+            return Math.round(v).toString();
+          };
+          const higher = ['AB','wOBA','ISO','wBsR','wRC+','IP','K-BB%','SV'];
+          const lower = ['FIP','WHIP'];
+          let html = '<div class="draft-cmp-grid">';
+          html += '<div class="draft-cmp-header-row"><div></div><div class="draft-cmp-name">'+a.name+'</div><div class="draft-cmp-name">'+b.name+'</div></div>';
+          allKeys.forEach(key => {
+            const av = a.stats[key], bv = b.stats[key];
+            const ap = a.pcts[key] || 0, bp = b.pcts[key] || 0;
+            let aWin = '', bWin = '';
+            if(av !== null && bv !== null){
+              if(higher.includes(key)){ if(av > bv) aWin = 'win'; else if(bv > av) bWin = 'win'; }
+              else if(lower.includes(key)){ if(av < bv) aWin = 'win'; else if(bv < av) bWin = 'win'; }
+            }
+            const barClass = (pct) => pct >= 75 ? 'great' : pct >= 50 ? 'good' : pct >= 35 ? 'avg' : 'concern';
+            html += '<div class="draft-cmp-row">';
+            html += '<div class="draft-cmp-label">'+key+'</div>';
+            html += '<div class="draft-cmp-cell '+aWin+'"><span class="draft-cmp-val">'+fmt(key,av)+'</span><div class="mini '+barClass(ap)+'"><i style="width:'+ap+'%"></i></div></div>';
+            html += '<div class="draft-cmp-cell '+bWin+'"><span class="draft-cmp-val">'+fmt(key,bv)+'</span><div class="mini '+barClass(bp)+'"><i style="width:'+bp+'%"></i></div></div>';
+            html += '</div>';
+          });
+          html += '</div>';
+          compareBody.innerHTML = html;
+        }
+
+        function clearCompare(){
+          compareSlots.forEach(s => s.wrap.querySelector('.draft-cmp-btn')?.classList.remove('cmp-active'));
+          compareSlots = [];
+          renderCompare();
+        }
+
+        compareClear?.addEventListener('click', clearCompare);
+
+        document.querySelectorAll('.draft-cmp-btn').forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const wrap = btn.closest('.draft-row-wrap');
+            const name = btn.dataset.name;
+            // If already selected, deselect
+            const idx = compareSlots.findIndex(s => s.name === name);
+            if(idx >= 0){
+              compareSlots.splice(idx, 1);
+              btn.classList.remove('cmp-active');
+              renderCompare();
+              return;
+            }
+            // If 2 already selected, replace the first
+            if(compareSlots.length >= 2){
+              compareSlots[0].wrap.querySelector('.draft-cmp-btn')?.classList.remove('cmp-active');
+              compareSlots.shift();
+            }
+            let stats = {}, pcts = {};
+            try { stats = JSON.parse(wrap.dataset.stats || '{}'); } catch(e){}
+            try { pcts = JSON.parse(wrap.dataset.pcts || '{}'); } catch(e){}
+            compareSlots.push({name, stats, pcts, wrap});
+            btn.classList.add('cmp-active');
+            renderCompare();
+          });
+        });
+
+        // Draft pick
+        document.querySelectorAll('.pick-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const name = btn.dataset.name;
+            btn.disabled = true; btn.textContent = '...';
+            const body = new URLSearchParams({name});
+            body.append('total_teams', '10');
+            try {
+              const res = await fetch('/draft/pick', {method:'POST', body});
+              const result = await res.json();
+              const pickNum = result.pick || '?';
+              const roundNum = result.round || '';
+              const slotNum = result.team_slot || '';
+              const wrap = btn.closest('.draft-row-wrap');
+              // Add to draft log
+              const logList = document.getElementById('draftLogList');
+              if(logList){
+                const emptyMsg = logList.querySelector('.empty');
+                if(emptyMsg) emptyMsg.remove();
+                const pos = wrap?.dataset?.pos || wrap?.querySelector('.draft-row-main')?.children[2]?.textContent?.trim() || '';
+                const metaParts = [];
+                if(roundNum && slotNum) metaParts.push('R'+roundNum+' · Slot '+slotNum);
+                if(pos) metaParts.push(pos);
+                const entry = document.createElement('div');
+                entry.className = 'draft-log-entry';
+                entry.dataset.logName = name;
+                entry.innerHTML = '<span class="draft-log-pick">'+pickNum+'</span><div class="draft-log-info"><span class="draft-log-name">'+name+'</span><span class="draft-log-meta">'+metaParts.join(' · ')+'</span></div><button class="draft-log-undo" data-name="'+name+'" title="Undo">✕</button>';
+                bindLogUndo(entry.querySelector('.draft-log-undo'));
+                logList.insertBefore(entry, logList.firstChild);
+              }
+              if(wrap){
+                wrap.classList.add('drafted');
+                // Add drafted badge to player name
+                const nameDiv = wrap.querySelector('.draft-row-main')?.children[1];
+                if(nameDiv){
+                  const badge = document.createElement('span');
+                  badge.className = 'badge avg';
+                  badge.textContent = 'Drafted';
+                  nameDiv.appendChild(badge);
+                }
+                // Replace draft controls with undo button
+                const actionCell = wrap.querySelector('.draft-action-cell');
+                if(actionCell){
+                  actionCell.innerHTML = '<button class="draft-btn undraft-btn" data-name="'+name+'">Undo</button>';
+                  actionCell.querySelector('.undraft-btn').addEventListener('click', async function(){
+                    this.disabled = true; this.textContent = '...';
+                    try { await fetch('/draft/unpick', {method:'POST', body: new URLSearchParams({name})}); location.reload(); }
+                    catch(e){ this.disabled = false; this.textContent = 'Undo'; }
+                  });
+                }
+                // Animate out
+                wrap.style.transition = 'opacity .3s';
+                wrap.style.opacity = '0';
+                setTimeout(() => { applyFilters(); wrap.style.opacity = ''; }, 300);
+              }
+              // Clear search and reset view
+              if(searchInput){ searchInput.value = ''; }
+              updatePositionSupplyBars();
+              updateValueHighlights();
+              // Re-apply filters after clearing search
+              setTimeout(applyFilters, 350);
+              // Refresh ideal draft
+              setTimeout(runIdealDraft, 500);
+            } catch(e){ btn.disabled = false; btn.textContent = 'Draft'; }
+          });
+        });
+
+        // Shared undraft handler
+        function undraftPlayer(name){
+          return fetch('/draft/unpick', {method:'POST', body: new URLSearchParams({name})});
+        }
+        function bindLogUndo(btn){
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const name = btn.dataset.name;
+            btn.disabled = true;
+            try {
+              await undraftPlayer(name);
+              // Remove log entry
+              const entry = btn.closest('.draft-log-entry');
+              if(entry) entry.remove();
+              // Un-draft the board row
+              const boardRow = document.querySelector('.draft-row-main[data-player="'+name+'"]');
+              if(boardRow){
+                const wrap = boardRow.closest('.draft-row-wrap');
+                if(wrap) wrap.classList.remove('drafted');
+                const actionCell = wrap?.querySelector('.draft-action-cell');
+                if(actionCell){
+                  actionCell.innerHTML = '<button class="draft-btn pick-btn" data-name="'+name+'">Draft</button>';
+                  const reDraftBtn = actionCell.querySelector('.pick-btn');
+                  reDraftBtn?.addEventListener('click', async function(){
+                    this.disabled = true;
+                    this.textContent = '...';
+                    const body = new URLSearchParams({name});
+                    body.append('total_teams', '10');
+                    try {
+                      await fetch('/draft/pick', {method:'POST', body});
+                      location.reload();
+                    } catch(e){
+                      this.disabled = false;
+                      this.textContent = 'Draft';
+                    }
+                  });
+                }
+              }
+              // Remove drafted badge from name
+              const nameDiv = boardRow?.parentElement?.querySelector('.draft-row-main')?.children[1];
+              if(nameDiv) nameDiv.querySelectorAll('.badge.avg').forEach(b => b.remove());
+              updatePositionSupplyBars();
+              updateValueHighlights();
+              applyFilters();
+            } catch(e){ btn.disabled = false; }
+          });
+        }
+        // Bind log undo buttons
+        document.querySelectorAll('.draft-log-undo').forEach(bindLogUndo);
+        // Bind board undo buttons
+        document.querySelectorAll('.undraft-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const name = btn.dataset.name;
+            btn.disabled = true; btn.textContent = '...';
+            try {
+              await undraftPlayer(name);
+              location.reload();
+            } catch(e){ btn.disabled = false; btn.textContent = 'Undo'; }
+          });
+        });
+
+        // ── Ideal Draft Simulator ──
+        const idealPickPos = document.getElementById('idealPickPos');
+        const idealDraftRun = document.getElementById('idealDraftRun');
+        const idealDraftBody = document.getElementById('idealDraftBody');
+        const skipPickBtn = document.getElementById('skipPickBtn');
+
+        // Restore saved pick position
+        const savedPick = localStorage.getItem('idealPickPos');
+        if(savedPick && idealPickPos) idealPickPos.value = savedPick;
+
+        async function runIdealDraft(){
+          const pick = parseInt(idealPickPos?.value) || 1;
+          localStorage.setItem('idealPickPos', pick);
+          idealDraftRun.disabled = true; idealDraftRun.textContent = 'Running...';
+          try {
+            const res = await fetch('/api/draft/ideal?pick='+pick+'&teams=10');
+            const data = await res.json();
+            if(data.error){ idealDraftBody.innerHTML = '<div class="empty">'+data.error+'</div>'; return; }
+
+            const tierClass = t => t <= 1 ? 'tier-1' : t <= 2 ? 'tier-2' : t <= 3 ? 'tier-3' : t <= 4 ? 'tier-4' : 'tier-5';
+            const renderRow = (p) => {
+              const isPitcher = (p.position||'').includes('Pitcher') || ['SP','RP','P'].some(x => (p.slot||'').includes(x));
+              const tierVal = (p.tier ?? '?');
+              const title = 'Pick '+(p.pick||'?')+' · '+(p.position||'')+' · ADP '+(p.adp||'?')+' · FPTS '+(p.fpts||'?')+' · PAR '+(p.par||'?');
+              const adpText = (p.adp != null && p.adp !== '') ? ('ADP '+p.adp) : 'ADP -';
+              const recText = (p.recommended_pick != null && p.recommended_pick !== '') ? ('Rec '+p.recommended_pick) : 'Rec -';
+              return '<div class="ideal-draft-item'+(isPitcher?' ideal-pitcher':'')+(p.existing?' ideal-existing':'')+'">' +
+                '<div class="ideal-draft-item-head">' +
+                  '<span class="ideal-round-badge">R'+(p.round||'?')+'</span>' +
+                  '<span class="ideal-name" title="'+title+'">'+(p.name||'')+'</span>' +
+                '</div>' +
+                '<div class="ideal-draft-item-meta">' +
+                  '<span class="ideal-overall">#'+(p.pick||'?')+'</span>' +
+                  '<span class="ideal-adp">'+adpText+'</span>' +
+                  '<span class="ideal-rec">'+recText+'</span>' +
+                  '<span class="ideal-slot">'+(p.slot||'')+'</span>' +
+                  '<span class="draft-tier '+tierClass(p.tier ?? 5)+'">T'+tierVal+'</span>' +
+                  '<span class="ideal-score">'+(p.score ?? '')+'</span>' +
+                '</div>' +
+              '</div>';
+            };
+            const renderSection = (label, picks) => {
+              if(!picks.length) return '';
+              let s = '<div class="ideal-section"><div class="ideal-section-label">'+label+'</div>';
+              picks.forEach(p => { s += renderRow(p); });
+              s += '</div>';
+              return s;
+            };
+
+            const existingPicks = (data.roster || []).filter(p => p.existing);
+            const plannedPicks = (data.roster || []).filter(p => !p.existing);
+            let html = '<div class="ideal-draft-table">';
+            html += renderSection('Already On Your Roster', existingPicks);
+            html += renderSection(existingPicks.length ? 'Plan From Here' : 'Draft Plan', plannedPicks);
+            html += '</div>';
+            idealDraftBody.innerHTML = html;
+          } catch(e){ idealDraftBody.innerHTML = '<div class="empty">Error running simulation.</div>'; }
+          finally { idealDraftRun.disabled = false; idealDraftRun.textContent = 'Simulate'; }
+        }
+
+        idealDraftRun?.addEventListener('click', runIdealDraft);
+        skipPickBtn?.addEventListener('click', async () => {
+          skipPickBtn.disabled = true;
+          const prev = skipPickBtn.textContent;
+          skipPickBtn.textContent = '...';
+          try {
+            await fetch('/draft/skip', {method:'POST'});
+            location.reload();
+          } catch(e){
+            skipPickBtn.disabled = false;
+            skipPickBtn.textContent = prev || 'Skip Pick';
+          }
+        });
+        // Auto-run on load if pick position is saved
+        if(savedPick) runIdealDraft();
+      })();
+      // Generate button loading state
+      const genBtn = document.getElementById('genBtn');
+      if(genBtn){
+        genBtn.closest('form').addEventListener('submit', () => {
+          genBtn.disabled = true; genBtn.textContent = 'Generating...';
+        });
+      }
+
+      // Autocomplete for compare inputs
+      (function(){
+        let debounce;
+        document.querySelectorAll('.ac-input').forEach(input => {
+          const list = input.parentElement.querySelector('.ac-list');
+          input.addEventListener('input', () => {
+            clearTimeout(debounce);
+            const q = input.value.trim();
+            if(q.length < 2){ list.innerHTML=''; list.style.display='none'; return; }
+            debounce = setTimeout(async () => {
+              try {
+                const res = await fetch('/api/players/search?q='+encodeURIComponent(q));
+                const names = await res.json();
+                if(!names.length){ list.innerHTML=''; list.style.display='none'; return; }
+                list.innerHTML = names.map(n => '<div class="ac-item">'+n+'</div>').join('');
+                list.style.display = 'block';
+                list.querySelectorAll('.ac-item').forEach(item => {
+                  item.addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    input.value = item.textContent;
+                    list.innerHTML=''; list.style.display='none';
+                  });
+                });
+              } catch(e){}
+            }, 200);
+          });
+          input.addEventListener('blur', () => { setTimeout(()=>{ list.innerHTML=''; list.style.display='none'; }, 150); });
+        });
+      })();
     </script>
   </body>
   </html>
-
-

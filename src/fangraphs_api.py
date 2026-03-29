@@ -42,11 +42,23 @@ def preprocess_fangraphs(df, mapping, prefix, position_value=None):
     return df
 
 def get_fangraphs_merged_data():
+    import os
+    from datetime import datetime
+
+    season = os.getenv("SEASON", str(datetime.now().year))
+
+    # Try rest-of-season first; fall back to full-season preseason projections
+    proj_type = "steamerr"
+    test = fetch_json_df(f"https://www.fangraphs.com/api/projections?type=steamerr&stats=bat&pos=all&team=0&players=0&lg=all")
+    if test.empty:
+        proj_type = "steamer"
+        print(f"INFO: steamerr empty — using preseason steamer projections")
+
     urls = {
-        "proj_bat": "https://www.fangraphs.com/api/projections?type=steamerr&stats=bat&pos=all&team=0&players=0&lg=all",
-        "proj_pit": "https://www.fangraphs.com/api/projections?type=steamerr&stats=pit&pos=all&team=0&players=0&lg=all",
-        "curr_bat": "https://www.fangraphs.com/api/leaders/major-league/data?age=&pos=all&stats=bat&lg=all&qual=0&season=2025&season1=2025&startdate=2025-03-01&enddate=2025-11-01&month=0&hand=&team=0&pageitems=2000000000&pagenum=1&ind=0&rost=0&players=&type=26&postseason=&sortdir=default&sortstat=WAR",
-        "curr_pit": "https://www.fangraphs.com/api/leaders/major-league/data?age=&pos=all&stats=pit&lg=all&qual=0&season=2025&season1=2025&startdate=2025-03-01&enddate=2025-11-01&month=0&hand=&team=0&pageitems=2000000000&pagenum=1&ind=0&rost=0&players=&type=26&postseason=&sortdir=default&sortstat=WAR",
+        "proj_bat": f"https://www.fangraphs.com/api/projections?type={proj_type}&stats=bat&pos=all&team=0&players=0&lg=all",
+        "proj_pit": f"https://www.fangraphs.com/api/projections?type={proj_type}&stats=pit&pos=all&team=0&players=0&lg=all",
+        "curr_bat": f"https://www.fangraphs.com/api/leaders/major-league/data?age=&pos=all&stats=bat&lg=all&qual=0&season={season}&season1={season}&startdate={season}-03-01&enddate={season}-11-01&month=0&hand=&team=0&pageitems=2000000000&pagenum=1&ind=0&rost=0&players=&type=26&postseason=&sortdir=default&sortstat=WAR",
+        "curr_pit": f"https://www.fangraphs.com/api/leaders/major-league/data?age=&pos=all&stats=pit&lg=all&qual=0&season={season}&season1={season}&startdate={season}-03-01&enddate={season}-11-01&month=0&hand=&team=0&pageitems=2000000000&pagenum=1&ind=0&rost=0&players=&type=26&postseason=&sortdir=default&sortstat=WAR",
     }
 
     try:
@@ -62,13 +74,20 @@ def get_fangraphs_merged_data():
         curr_bat = preprocess_fangraphs(curr_bat, {"PlayerName": "name", "TeamName": "team", "Position": "position"}, "curr_")
         curr_pit = preprocess_fangraphs(curr_pit, {"PlayerName": "name", "TeamName": "team"}, "curr_", position_value="Pitcher")
 
-        # --- Merge on playerid ---
-        bat_df = pd.merge(proj_bat, curr_bat, on="playerid", how="outer")
-        pit_df = pd.merge(proj_pit, curr_pit, on="playerid", how="outer")
+        # --- Merge on playerid (handle empty current stats for preseason) ---
+        if curr_bat.empty or "playerid" not in curr_bat.columns:
+            bat_df = proj_bat.copy()
+            print("INFO: No current batting stats available (preseason) — using projections only")
+        else:
+            bat_df = pd.merge(proj_bat, curr_bat, on="playerid", how="outer")
+            bat_df = unify_identifiers(bat_df)
 
-        # --- Unify name, team, position ---
-        bat_df = unify_identifiers(bat_df)
-        pit_df = unify_identifiers(pit_df)
+        if curr_pit.empty or "playerid" not in curr_pit.columns:
+            pit_df = proj_pit.copy()
+            print("INFO: No current pitching stats available (preseason) — using projections only")
+        else:
+            pit_df = pd.merge(proj_pit, curr_pit, on="playerid", how="outer")
+            pit_df = unify_identifiers(pit_df)
 
         print(f"INFO: Merged {len(bat_df)} batters and {len(pit_df)} pitchers.")
         return bat_df, pit_df

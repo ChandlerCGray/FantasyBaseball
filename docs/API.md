@@ -1,137 +1,141 @@
-# Fantasy Baseball Hub — API & Developer Reference
+# Fantasy Baseball Hub - API & Developer Reference
 
-## Routes
+## Route Reference
 
-### UI Pages
+### HTML pages
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/` | Dashboard — position strength overview for selected team |
-| `GET` | `/add-drop` | Free agent rankings, filterable by position |
-| `GET` | `/team` | Roster for the selected team, filterable by position tab |
-| `GET` | `/players` | Paginated, searchable table of all league players |
-| `GET` | `/compare` | Side-by-side player comparison |
-| `GET` | `/draft` | Interactive draft board |
-| `GET` | `/league` | League standings ranked by projected composite score |
-| `GET` | `/league/team` | Roster breakdown for a specific league team |
-| `GET` | `/player` | Individual player detail page |
-| `GET` | `/drop-candidates` | Players on your roster recommended for dropping |
-| `GET` | `/free-agents` | Free agent list (alternative to add-drop view) |
+| Method | Path | Notes |
+|---|---|---|
+| `GET` | `/` | Dashboard |
+| `GET` | `/add-drop` | Add/drop analysis view |
+| `GET` | `/free-agents` | Free-agent list view |
+| `GET` | `/drop-candidates` | Drop-candidate view |
+| `GET` | `/league` | League summary |
+| `GET` | `/league/team` | Team breakdown within league view |
+| `GET` | `/compare` | Player-vs-player comparison |
+| `GET` | `/players` | Searchable/paginated player list |
+| `GET` | `/draft` | Draft board UI |
+| `GET` | `/player` | Player detail page (`player.html`) |
+| `GET` | `/team` | Team roster view |
 
-### Data & Actions
+### JSON/action endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/update` | Trigger a data refresh from ESPN and FanGraphs |
-| `GET` | `/api/players/search` | JSON player search (used by compare autocomplete) |
+| Method | Path | Notes |
+|---|---|---|
+| `GET` | `/api/players/search` | Autocomplete-style player search |
+| `POST` | `/update` | Runs `python src/main.py` to refresh CSV output |
+| `POST` | `/draft/generate` | Rebuilds draft workbook, then redirects to `/draft` |
+| `POST` | `/draft/pick` | Marks one player drafted |
+| `POST` | `/draft/skip` | Adds a skipped pick entry |
+| `POST` | `/draft/unpick` | Clears drafted state for one player |
+| `GET` | `/api/draft/advisor` | Draft advisor JSON |
+| `GET` | `/api/draft/ideal` | Ideal draft simulation JSON |
 
-### Draft Sub-routes
+## Query/Form Parameters
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/draft/generate` | Generate or regenerate draft rankings |
-| `POST` | `/draft/pick` | Mark a player as drafted |
-| `POST` | `/draft/skip` | Skip a player in the draft order |
-| `POST` | `/draft/unpick` | Undo a draft pick |
-| `GET` | `/api/draft/advisor` | Draft advisor recommendations (JSON) |
-| `GET` | `/api/draft/ideal` | Ideal draft targets (JSON) |
+### Common UI query params
 
-### Common Query Parameters
-
-Most UI pages accept these query parameters:
+Supported on most page routes:
 
 | Parameter | Type | Description |
-|-----------|------|-------------|
-| `team` | string | Selected fantasy team name |
-| `hideInjured` | `true`/`false` | Exclude injured players |
-| `pos` | string | Filter by position (e.g. `OF`, `1B`, `P`) |
-| `minScore` | float | Minimum composite score threshold (default `-1.0`) |
+|---|---|---|
+| `team` | string | Selected fantasy team |
+| `hideInjured` | `true`/`false` | Defaults to `true` |
+| `minScore` | float | Parsed from query string, passed through route context |
 
-`/players` additionally supports:
+`minScore` is currently not applied as an active filter in the main route helpers.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `q` | string | Name search query |
-| `roster` | string | Filter by fantasy team or `Free Agent` |
-| `sort` | string | Sort field (`proj`, `curr`, or `name`) |
-| `per` | int | Results per page (`25`, `50`, `100`, `200`) |
-| `page` | int | Page number |
+### Route-specific params
+
+| Route | Parameters |
+|---|---|
+| `/add-drop` | `pos`, `faSort`, `faRoster`, `faUpg` |
+| `/drop-candidates` | `pos` |
+| `/team` | `pos` |
+| `/players` | `q`, `pos`, `roster`, `sort` (`proj`/`curr`/`name`), `per` (clamped 5-200), `page` |
+| `/compare` | `p1`, `p2` |
+| `/player` | `name` |
+| `POST /update` | query: `model` (`steamer`, `zips`, `thebat`, `thebatx`, `atc`, `fangraphsdc`) |
+| `POST /draft/pick` | form: `name` (required), `drafted_by` (optional), `total_teams` (default `10`) |
+| `POST /draft/unpick` | form: `name` (required) |
+| `GET /api/draft/advisor` | query: `position` (optional filter) |
+| `GET /api/draft/ideal` | query: `pick` (default `1`), `teams` (default `10`) |
+
+## Response Behavior
+
+- Most page routes render `index.html`; `/player` renders `player.html`.
+- If no ranked CSV exists, page routes return `no_data.html`.
+- `/api/players/search` returns `[]` for queries shorter than 2 chars.
+- `/update` returns JSON:
+  - success: `{"status":"ok"}`
+  - failure: `{"status":"error","detail":"..."}` with HTTP 500
+- `/draft/generate` returns HTTP `303` redirect to `/draft`.
 
 ## Core Modules
 
 ### `src/server/main.py`
-FastAPI application. All routes live here. Reads from the latest `output/free_agents_ranked_*.csv` file and builds server-rendered HTML responses via Jinja2 templates.
+
+Primary FastAPI app and all routes. Loads latest `output/free_agents_ranked_*.csv`, prepares derived columns, and renders Jinja templates.
+
+### `src/main.py`
+
+Data refresh pipeline used by `/update`: ESPN pull -> FanGraphs pull -> merge/rank -> timestamped CSV output.
 
 ### `src/espn_data.py`
-ESPN Fantasy Baseball API integration (built on `espn-api` by cwendt94).
+
+ESPN integration using `espn-api` plus raw ESPN endpoints.
 
 Key functions:
-- `get_all_players(league_id, season, espn_s2, swid)` — fetch all players with ownership and roster data
-- `get_league_info(league_id, season, espn_s2, swid)` — fetch league settings and team info
+- `get_all_players(...)`
+- `get_roster_settings(...)`
+- `get_scoring_settings(...)`
+- `fetch_espn_adp_map(...)`
 
 ### `src/fangraphs_api.py`
-FanGraphs projections and current stats.
 
-Key functions:
-- `get_fangraphs_merged_data()` — merged batting + pitching data
-- `get_batting_projections()` — hitter projections
-- `get_pitching_projections()` — pitcher projections
+FanGraphs fetch/merge logic and projection model mapping.
+
+Key items:
+- `PROJECTION_MODELS`
+- `get_fangraphs_merged_data(model="steamer")`
 
 ### `src/analysis.py`
-Statistical analysis: z-score normalization, composite score calculations, position scarcity adjustments.
 
-### `src/data_utils.py`
-Data loading and normalization.
-
-Key functions:
-- `load_data()` — load the latest CSV from `output/`
-- `run_data_update()` — trigger ESPN + FanGraphs refresh and write a new CSV
-- `get_latest_csv_file()` — find the most recent data file
-- `expand_positions(position)` — normalize position strings to a list
-- `format_player_name(row)` — format display name (with injury tag if applicable)
+Data merge and ranking logic used during refresh.
 
 ### `src/draft_strategy_generator.py`
-Draft ranking logic: VADP calculations, tier assignments, position scarcity modeling, and ideal pick recommendations.
+
+Draft workbook generation and ranking adjustments.
 
 Key function:
-- `analyze_and_adjust_rankings(df, ...)` — produces the ranked draft board DataFrame
+- `analyze_and_adjust_rankings(...)`
 
-## Data Format
+### `src/data_utils.py`
 
-The main DataFrame used across all pages is loaded from `output/free_agents_ranked_*.csv`:
+Shared data helpers (position expansion, display-name formatting, and legacy Streamlit helpers).
 
-```python
-{
-    'display_name': str,              # Player name (with injury status if applicable)
-    'Name': str,                      # Raw player name
-    'Team': str,                      # MLB team abbreviation
-    'position': str,                  # Raw position string from ESPN
-    'norm_positions': list[str],      # Normalized list of eligible positions
-    'fantasy_team': str,              # Fantasy team name, or NaN / "Free Agent"
-    'proj_CompositeScore': float,     # Projected composite score (FanGraphs projections)
-    'curr_CompositeScore': float,     # Current composite score (season stats to date)
-    'ScoreDelta': float,              # curr - proj (performance vs. expectation)
-    'injury_status': str,             # Injury designation (e.g. "DTD", "IL10")
-    'has_valid_position': bool,       # Whether norm_positions is non-empty
-}
-```
+## Data & Output Files
 
-## Output Files
+### Primary files
 
-| Path pattern | Description |
+| Pattern | Purpose |
 |---|---|
-| `output/free_agents_ranked_YYYYMMDD_HHMMSS.csv` | Timestamped player data snapshot |
-| `output/draft_strategy_YYYYMMDD_HHMMSS.xlsx` | Draft board state (picks, skips, rankings) |
-| `output/roster_settings.json` | Cached ESPN roster slot configuration |
-| `output/scoring_settings.json` | Cached ESPN scoring category configuration |
+| `output/free_agents_ranked_YYYYMMDD_HHMMSS.csv` | Ranked player snapshot consumed by FastAPI pages |
+| `output/draft_strategy_YYYYMMDD_HHMMSS.xlsx` | Draft board state and pick log |
+| `output/roster_settings.json` | League roster slot config |
+| `output/scoring_settings.json` | League scoring config |
 
-The app always reads the most recently modified CSV. Draft state is always read from the most recently modified Excel file.
+App behavior:
+- Ranked CSV: latest file matching `free_agents_ranked_*.csv`
+- Draft workbook: latest file matching `draft_strategy_*.xlsx`
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `LEAGUE_ID` | ESPN Fantasy Baseball league ID |
+| Variable | Purpose |
+|---|---|
+| `LEAGUE_ID` | ESPN league id |
 | `SEASON` | Fantasy season year |
 | `SWID` | ESPN SWID cookie |
-| `ESPN_S2` | ESPN S2 cookie |
+| `ESPN_S2` | ESPN espn_s2 cookie |
+| `DEFAULT_TEAM` | Optional default selected team |
+| `PROJECTION_MODEL` | Projection source model used for refresh |

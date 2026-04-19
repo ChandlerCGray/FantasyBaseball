@@ -4,128 +4,197 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Fantasy Baseball Hub</title>
-    <link rel="stylesheet" href="/static/css/base.css?v=39" />
+    <link rel="stylesheet" href="/static/css/base.css?v=56" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body class="view-{{ view }}">
     <div class="app">
       <aside class="sidebar">
-        <div class="brand">Fantasy Baseball Hub</div>
-        <div class="section">
-          <div class="label">Data</div>
-          <div class="value">{{ data_file }}</div>
+        <div class="brand">
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8c-1.5 0-3 .5-3 2s1.5 2 3 2 3 .5 3 2-1.5 2-3 2"/><path d="M12 6v2m0 8v2"/></svg>
+          <span>Fantasy Hub</span>
         </div>
-        <div class="section">
-          <div class="label">Team</div>
-          <select id="teamSelect">
-            {% for t in teams %}
-            <option value="{{ t }}" {% if selected_team==t %}selected{% endif %}>{{ t }}</option>
-            {% endfor %}
-          </select>
+
+        <nav class="sidebar-nav">
+          <a class="nav-item {% if view=='dashboard' %}active{% endif %}" href="/?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Dashboard
+          </a>
+          <a class="nav-item {% if view=='add_drop' %}active{% endif %}" href="/add-drop?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/><polyline points="5 12 12 5 19 12" transform="translate(0,-4)"/></svg>
+            Add / Drop
+          </a>
+          <a class="nav-item {% if view=='team' %}active{% endif %}" href="/team?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            My Team
+          </a>
+          <a class="nav-item {% if view=='players' %}active{% endif %}" href="/players?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            All Players
+          </a>
+          <a class="nav-item {% if view=='compare' %}active{% endif %}" href="/compare?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            Compare
+          </a>
+          <a class="nav-item {% if view=='draft' %}active{% endif %}" href="/draft?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Draft
+          </a>
+          <a class="nav-item {% if view=='league' %}active{% endif %}" href="/league?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            League
+          </a>
+        </nav>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-settings">
+          <div class="setting-group">
+            <label class="setting-label">Team</label>
+            <select id="teamSelect">
+              {% for t in teams %}
+              <option value="{{ t }}" {% if selected_team==t %}selected{% endif %}>{{ t }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="setting-group">
+            <label class="setting-label">Projections</label>
+            <select id="projModelSelect">
+              {% for key, label in PROJECTION_MODELS %}
+              <option value="{{ key }}" {% if get_projection_model()==key %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <label class="checkbox"><input type="checkbox" id="hideInjured" {% if hide_injured %}checked{% endif %}/> Hide injured</label>
         </div>
-         <div class="section">
-          <div class="label">Filters</div>
-          <label class="checkbox"><input type="checkbox" id="hideInjured" {% if hide_injured %}checked{% endif %}/> Hide Injured</label>
-        </div>
-        <div class="section">
-          <div class="label">Projections</div>
-          <select id="projModelSelect">
-            {% for key, label in PROJECTION_MODELS %}
-            <option value="{{ key }}" {% if get_projection_model()==key %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="section">
-          <button id="updateBtn" class="primary">Update Data</button>
+
+        <div class="sidebar-footer">
+          <div class="data-freshness">{{ data_file }}</div>
+          <button id="updateBtn" class="update-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh Data
+          </button>
+          <div class="update-progress" id="updateProgress">
+            <div class="update-progress-bar"><div class="update-progress-fill"></div></div>
+            <div class="update-progress-label" id="updateProgressLabel">Fetching data…</div>
+          </div>
         </div>
       </aside>
       <div class="backdrop" id="backdrop"></div>
       <main class="content">
         <header class="toolbar">
-          <nav class="tabs">
-            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Filters" title="Filters">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M4 7h16v2H4zM7 11h10v2H7zM10 15h4v2h-4z" fill="currentColor"/>
-              </svg>
-            </button>
-            <a class="tab {% if view=='dashboard' %}active{% endif %}" href="/?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Dashboard</a>
-            <a class="tab {% if view=='add_drop' %}active{% endif %}" href="/add-drop?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Add/Drop</a>
-            <a class="tab {% if view=='team' %}active{% endif %}" href="/team?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">My Team</a>
-            <a class="tab {% if view=='players' %}active{% endif %}" href="/players?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">All Players</a>
-            <a class="tab {% if view=='compare' %}active{% endif %}" href="/compare?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Compare</a>
-
-            <a class="tab {% if view=='draft' %}active{% endif %}" href="/draft?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">Draft</a>
-            <a class="tab {% if view=='league' %}active{% endif %}" href="/league?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}">League</a>
-          </nav>
+          <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <span class="toolbar-title">{% if view=='dashboard' %}Dashboard{% elif view=='add_drop' %}Add / Drop{% elif view=='team' %}My Team{% elif view=='players' %}All Players{% elif view=='compare' %}Compare{% elif view=='draft' %}Draft{% elif view=='league' %}League{% elif view=='league_team' %}League Team{% else %}Fantasy Hub{% endif %}</span>
+          <span class="toolbar-team">{{ selected_team }}</span>
         </header>
         <section class="panel panel-{{ view }}">
-          <div class="panel-title">{% if view=='dashboard' %}Dashboard{% elif view=='add_drop' %}Add/Drop Recommendations{% elif view=='free_agents' %}Free Agents{% elif view=='team' %}My Team{% elif view=='compare' %}Compare{% elif view=='league' %}League{% elif view=='league_team' %}Team Breakdown{% elif view=='players' %}All Players{% elif view=='draft' %}Draft Board{% else %}Dashboard{% endif %}</div>
           <div id="root" class="panel-body">
             {% if view in ('add_drop', 'team') and positions is defined and positions %}
             {% set view_path = {'add_drop': '/add-drop', 'team': '/team'}[view] %}
+            {% set base_qs = "team=" ~ selected_team ~ "&hideInjured=" ~ ('true' if hide_injured else 'false') %}
+            {% if view == 'add_drop' %}
+              {% set persist_qs = base_qs ~ "&faSort=" ~ (fa_sort or 'proj') ~ "&faRoster=" ~ (fa_roster or '0') ~ "&faUpg=" ~ (fa_upg or '0') %}
+            {% else %}
+              {% set persist_qs = base_qs %}
+            {% endif %}
             <div class="pos-pills">
-              <a class="pill {% if not pos %}active{% endif %}" href="{{ view_path }}?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}">All</a>
+              <a class="pill {% if not pos %}active{% endif %}" href="{{ view_path }}?{{ persist_qs }}">All</a>
               {% for p in positions %}
-              <a class="pill {% if pos==p %}active{% endif %}" href="{{ view_path }}?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&pos={{p}}">{{p}}</a>
+              <a class="pill {% if pos==p %}active{% endif %}" href="{{ view_path }}?{{ persist_qs }}&pos={{p}}">{{p}}</a>
               {% endfor %}
             </div>
             {% endif %}
             {% if view=='dashboard' and dash %}
-              <h3 class="dash-heading">Position Strength</h3>
-              <div class="dash-grid">
-                {% for p in dash.positions %}
-                <div class="dash-card" data-badge="{{ p.badge }}">
-                  <div class="dash-card-header">
-                    <span class="dash-pos">{{ p.pos }}</span>
-                    <span class="badge {{ p.badge }}">{{ '+' if p.strength_pct >= 100 else '' }}{{ p.strength_pct - 100 }}%</span>
+              {% set q = "team=" ~ selected_team ~ "&hideInjured=" ~ ('true' if hide_injured else 'false') %}
+
+              {# ── Injured alert ── #}
+              {% if dash.injured %}
+              <div class="dash-alert">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>{{ dash.injured|length }} injured player{{ 's' if dash.injured|length != 1 else '' }} on your roster —
+                  {% for p in dash.injured %}<a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
+                </span>
+              </div>
+              {% endif %}
+
+              {# ── Available moves ── #}
+              {% if dash.upgrades %}
+              <div class="dash-section-label">Available moves</div>
+              <div class="dash-moves">
+                {% for u in dash.upgrades %}
+                <a class="dash-move" href="/compare?{{ q }}&p1={{ u.add.display_name }}&p2={{ u.drop.display_name }}">
+                  <div class="dash-move-pos">{{ u.pos }}</div>
+                  <div class="dash-move-players">
+                    <div class="dash-move-add">
+                      <span class="dash-move-verb add">Add</span>
+                      <span class="dash-move-name">{{ u.add.display_name }}</span>
+                      <span class="dash-move-team">{{ u.add.Team or '' }}</span>
+                    </div>
+                    <div class="dash-move-drop">
+                      <span class="dash-move-verb drop">Drop</span>
+                      <span class="dash-move-name">{{ u.drop.display_name }}</span>
+                    </div>
                   </div>
-                  <div class="dash-card-body">
-                    {% set max_val = [p.team_avg, p.league_avg]|max %}
-                    <div class="dash-bar-row">
-                      <span class="dash-bar-label">Team</span>
-                      <div class="dash-bar"><div class="dash-bar-fill" style="width:{{ (p.team_avg / max_val * 100)|round|int if max_val > 0 else 0 }}%"></div></div>
-                      <span class="dash-bar-val">{{ '%.3f'|format(p.team_avg) }}</span>
-                    </div>
-                    <div class="dash-bar-row">
-                      <span class="dash-bar-label">Lg Avg</span>
-                      <div class="dash-bar"><div class="dash-bar-fill league" style="width:{{ (p.league_avg / max_val * 100)|round|int if max_val > 0 else 0 }}%"></div></div>
-                      <span class="dash-bar-val">{{ '%.3f'|format(p.league_avg) }}</span>
-                    </div>
-                    <div class="dash-card-meta">
-                      {{ p.count }} player{{ 's' if p.count != 1 else '' }}
-                      {% if p.best %} · Best: <a class="link" href="/player?name={{ p.best }}">{{ p.best }}</a>{% endif %}
-                      {% if p.worst and p.worst != p.best %} · Worst: <a class="link" href="/player?name={{ p.worst }}">{{ p.worst }}</a>{% endif %}
-                    </div>
-                    <div class="dash-card-actions">
-                      <a class="link" href="/team?team={{ selected_team }}&hideInjured={{ 'true' if hide_injured else 'false' }}&pos={{ p.pos }}">View roster →</a>
-                      <a class="link" href="/add-drop?team={{ selected_team }}&hideInjured={{ 'true' if hide_injured else 'false' }}&pos={{ p.pos }}">Find upgrades →</a>
-                    </div>
-                  </div>
-                </div>
+                  <div class="dash-move-gain">+{{ '%.2f'|format(u.gain) }}</div>
+                </a>
                 {% endfor %}
               </div>
-              <h3 class="dash-heading">Quick Actions</h3>
-              <div class="dash-actions">
-                {% if dash.top_upgrade %}
-                <div class="card">
-                  <div class="kicker add">Top Upgrade Available</div>
-                  <div class="name">Add {{ dash.top_upgrade.add.display_name }} ({{ dash.top_upgrade.pos }})</div>
-                  <div class="meta">Drop {{ dash.top_upgrade.drop.display_name }} · +{{ '%.3f'|format(dash.top_upgrade.gain) }}</div>
-                  <a class="link" href="/add-drop?team={{ selected_team }}&hideInjured={{ 'true' if hide_injured else 'false' }}">View all →</a>
-                </div>
-                {% endif %}
-                {% if dash.replace_weakest %}
-                <div class="card">
-                  <div class="kicker drop">Replace Weakest Spot</div>
-                  <div class="name">Add {{ dash.replace_weakest.add.display_name }} ({{ dash.replace_weakest.pos }})</div>
-                  <div class="meta">Drop {{ dash.replace_weakest.drop.display_name }} · +{{ '%.3f'|format(dash.replace_weakest.gain) }}</div>
-                  <a class="link" href="/add-drop?team={{ selected_team }}&hideInjured={{ 'true' if hide_injured else 'false' }}">View all →</a>
-                </div>
-                {% endif %}
+              {% else %}
+              <div class="dash-empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <p>No clear upgrades available right now.</p>
+                <a class="btn-link" href="/add-drop?{{ q }}">Browse free agents →</a>
               </div>
-            {% endif %}
-            {% if view=='add_drop' %}
-              {% if upgrades and upgrades|length > 0 %}
-              <h3 class="dash-heading">Recommended Swaps</h3>
+              {% endif %}
+
+              {# ── Position health ── #}
+              <div class="dash-section-label" style="margin-top:28px">Position health</div>
+              <div class="dash-pos-grid">
+                {% for p in dash.positions %}
+                <a class="dash-pos-chip dash-pos-{{ p.badge }}" href="/add-drop?{{ q }}&pos={{ p.pos }}" title="Find {{ p.pos }} upgrades">
+                  <span class="dash-pos-chip-name">{{ p.pos }}</span>
+                  <span class="dash-pos-chip-dot"></span>
+                </a>
+                {% endfor %}
+              </div>
+              <div class="dash-pos-legend">
+                <span class="legend-item great">Strong</span>
+                <span class="legend-item good">Good</span>
+                <span class="legend-item avg">Average</span>
+                <span class="legend-item concern">Weak</span>
+              </div>
+
+              {# ── Standing ── #}
+              {% if dash.team_rank %}
+              <div class="dash-standing">
+                Ranked <strong>{{ dash.team_rank }}</strong> of {{ dash.total_teams }} teams
+                <a class="btn-link" href="/league?{{ q }}">View standings →</a>
+              </div>
+              {% endif %}
+            {% elif view=='add_drop' %}
+              {% set upgrade_count = upgrades|length if upgrades else 0 %}
+              {% set fa_count = fa|length if fa else 0 %}
+
+              {# ── Page summary bar ── #}
+              <div class="adddrop-summary">
+                {% if upgrade_count > 0 %}
+                <span class="adddrop-summary-stat good">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                  {{ upgrade_count }} upgrade{{ 's' if upgrade_count != 1 else '' }} available
+                </span>
+                {% else %}
+                <span class="adddrop-summary-stat neutral">No upgrades found{% if pos %} at {{ pos }}{% endif %}</span>
+                {% endif %}
+                <span class="adddrop-summary-meta">{{ fa_count }} free agent{{ 's' if fa_count != 1 else '' }}{% if pos %} at {{ pos }}{% endif %} available</span>
+              </div>
+
+              {# ── Recommended swaps ── #}
+              {% if upgrade_count > 0 %}
+              <div class="adddrop-section-label">Recommended moves</div>
               {% for u in upgrades %}
                 <div class="swap-card">
                   <div class="swap-header">
@@ -151,47 +220,187 @@
                 </div>
               {% endfor %}
               {% else %}
-              <div class="empty" style="margin-bottom:12px">No clear upgrades for the current filters.</div>
+              <div class="adddrop-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
+                <p>No upgrades found{% if pos %} at {{ pos }}{% endif %}.</p>
+                <span>Browse the free agent list below to explore options.</span>
+              </div>
               {% endif %}
+
+              {# ── Free agents table ── #}
               {% if fa %}
-              <h3 class="dash-heading">Available Free Agents</h3>
-              <div class="table" data-sortable="true">
-                <div class="trow thead">
-                  <div class="sortable" data-type="string">Name</div>
-                  <div class="sortable" data-type="string">Team</div>
-                  <div class="sortable" data-type="string">Pos</div>
-                  <div class="sortable" data-type="number">Proj</div>
-                  <div class="sortable" data-type="number">Curr</div>
+              <div class="fa-toolbar" style="margin-top:28px">
+                <div class="adddrop-section-label" style="margin-bottom:0">Free agents{% if pos %} — {{ pos }}{% endif %}</div>
+                <div class="fa-toolbar-controls">
+                  <input type="search" placeholder="Search…" id="faSearch" class="fa-search" />
+                  <div class="fa-sort-pills">
+                    <button class="pill {% if fa_sort=='proj' or not fa_sort %}active{% endif %}" data-sort="proj">Proj</button>
+                    <button class="pill {% if fa_sort=='curr' %}active{% endif %}" data-sort="curr">Current</button>
+                    <button class="pill {% if fa_sort=='rank' %}active{% endif %}" data-sort="rank">Rank</button>
+                    <button class="pill {% if fa_sort=='pts' %}active{% endif %}" data-sort="pts">Pts</button>
+                  </div>
+                  <div class="fa-sort-pills fa-filter-pills">
+                    <button class="pill fa-pill-upg {% if fa_upg=='1' %}active{% endif %}" id="faUpgradesOnly">Upgrades only</button>
+                    {% if roster %}<button class="pill fa-pill-roster {% if fa_roster=='1' %}active{% endif %}" id="faShowRoster">My roster</button>{% endif %}
+                  </div>
                 </div>
+              </div>
+              <div class="fa-list" id="faList">
                 {% for p in fa %}
-                  <div class="trow">
-                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a>{% if upgrade_names is defined and p.display_name in upgrade_names %}<span class="badge great">Upgrade</span>{% endif %} <a class="cmp-btn" href="/compare?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&p1={{ p.display_name }}" title="Compare">vs</a></div>
-                  <div>{{ p.Team }}</div>
-                  <div>{{ p.position }}</div>
-                  <div>{{ '%.3f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '' }}</div>
-                  <div>{{ '%.3f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '' }}</div>
+                {% set is_pitcher = 'P' in (p.position or '') %}
+                {% set is_upgrade = upgrade_names is defined and p.display_name in upgrade_names %}
+                <div class="fa-card{% if is_upgrade %} fa-card-upgrade{% endif %}"
+                  data-proj="{{ p.proj_CompositeScore or 0 }}"
+                  data-curr="{{ p.curr_CompositeScore or 0 }}"
+                  data-rank="{{ p.best_pos_rank or 9999 }}"
+                  data-pts="{{ p.fantasy_points or 0 }}"
+                  data-name="{{ p.display_name | lower }}"
+                  data-upgrade="{{ 'true' if is_upgrade else 'false' }}">
+                  <div class="fa-card-left">
+                    <div class="fa-card-identity">
+                      <div class="fa-card-name">
+                        <a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a>
+                        {% if is_upgrade %}<span class="badge great">Upgrade</span>{% endif %}
+                        {% if p.injury_status and p.injury_status not in ('ACTIVE', '', 'None') %}<span class="badge concern">{{ p.injury_status }}</span>{% endif %}
+                      </div>
+                      <div class="fa-card-meta">
+                        {{ p.Team or '—' }} · {{ p.position or '—' }}
+                        {% if p.pos_ranks_str is defined and p.pos_ranks_str %} · {{ p.pos_ranks_str }}{% endif %}
+                        {% if p.fantasy_points and p.fantasy_points > 0 %} · {{ '%.0f'|format(p.fantasy_points) }} pts{% endif %}
+                      </div>
+                    </div>
+                    <div class="fa-card-stats">
+                      {% if is_pitcher %}
+                        {% if p.proj_ERA is not none and p.proj_ERA == p.proj_ERA %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_ERA) }}</span><span class="fa-stat-lbl">ERA</span></span>{% endif %}
+                        {% if p.proj_WHIP is not none and p.proj_WHIP == p.proj_WHIP and p.proj_WHIP > 0 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_WHIP) }}</span><span class="fa-stat-lbl">WHIP</span></span>{% endif %}
+                        {% if p.proj_SV is not none and p.proj_SV == p.proj_SV %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SV) }}</span><span class="fa-stat-lbl">SV</span></span>{% endif %}
+                        {% if p.proj_IP is not none and p.proj_IP == p.proj_IP and p.proj_IP > 1 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_IP) }}</span><span class="fa-stat-lbl">IP</span></span>{% endif %}
+                        {% if p['proj_K-BB%'] is not none and p['proj_K-BB%'] == p['proj_K-BB%'] %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.1f'|format(p['proj_K-BB%'] * 100) }}%</span><span class="fa-stat-lbl">K-BB%</span></span>{% endif %}
+                      {% else %}
+                        {% if p.proj_HR is not none and p.proj_HR == p.proj_HR %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_HR) }}</span><span class="fa-stat-lbl">HR</span></span>{% endif %}
+                        {% if p.proj_R is not none and p.proj_R == p.proj_R %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_R) }}</span><span class="fa-stat-lbl">R</span></span>{% endif %}
+                        {% if p.proj_RBI is not none and p.proj_RBI == p.proj_RBI %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_RBI) }}</span><span class="fa-stat-lbl">RBI</span></span>{% endif %}
+                        {% if p.proj_SB is not none and p.proj_SB == p.proj_SB %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SB) }}</span><span class="fa-stat-lbl">SB</span></span>{% endif %}
+                        {% if p.proj_AVG is not none and p.proj_AVG == p.proj_AVG %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.3f'|format(p.proj_AVG) }}</span><span class="fa-stat-lbl">AVG</span></span>{% endif %}
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="fa-card-right">
+                    <div class="fa-score-block">
+                      <div class="fa-score {% if p.proj_CompositeScore is not none and p.proj_CompositeScore > 1.5 %}fa-score-great{% elif p.proj_CompositeScore is not none and p.proj_CompositeScore > 1.0 %}fa-score-good{% endif %}">{{ '%.2f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '—' }}</div>
+                      <div class="fa-score-lbl">Proj</div>
+                    </div>
+                    <div class="fa-score-block">
+                      <div class="fa-score fa-score-curr">{{ '%.2f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '—' }}</div>
+                      <div class="fa-score-lbl">Curr</div>
+                    </div>
+                    <a class="btn-link fa-cmp-btn" href="/compare?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&p1={{ p.Name }}">Compare</a>
+                  </div>
                 </div>
                 {% endfor %}
+                {% if roster %}
+                {% for p in roster %}
+                {% set is_pitcher = 'P' in (p.position or '') %}
+                <div class="fa-card fa-card-roster"
+                  data-proj="{{ p.proj_CompositeScore or 0 }}"
+                  data-curr="{{ p.curr_CompositeScore or 0 }}"
+                  data-rank="{{ p.best_pos_rank or 9999 }}"
+                  data-pts="{{ p.fantasy_points or 0 }}"
+                  data-name="{{ p.display_name | lower }}"
+                  data-upgrade="false"
+                  data-roster="true"
+                  style="display:none">
+                  <div class="fa-card-left">
+                    <div class="fa-card-identity">
+                      <div class="fa-card-name">
+                        <a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a>
+                        <span class="badge avg">Rostered</span>
+                        {% if p.injury_status and p.injury_status not in ('ACTIVE', '', 'None') %}<span class="badge concern">{{ p.injury_status }}</span>{% endif %}
+                      </div>
+                      <div class="fa-card-meta">
+                        {{ p.Team or '—' }} · {{ p.position or '—' }}
+                        {% if p.pos_ranks_str is defined and p.pos_ranks_str %} · {{ p.pos_ranks_str }}{% endif %}
+                        {% if p.fantasy_points and p.fantasy_points > 0 %} · {{ '%.0f'|format(p.fantasy_points) }} pts{% endif %}
+                      </div>
+                    </div>
+                    <div class="fa-card-stats">
+                      {% if is_pitcher %}
+                        {% if p.proj_ERA is not none and p.proj_ERA == p.proj_ERA %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_ERA) }}</span><span class="fa-stat-lbl">ERA</span></span>{% endif %}
+                        {% if p.proj_WHIP is not none and p.proj_WHIP == p.proj_WHIP and p.proj_WHIP > 0 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_WHIP) }}</span><span class="fa-stat-lbl">WHIP</span></span>{% endif %}
+                        {% if p.proj_SV is not none and p.proj_SV == p.proj_SV %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SV) }}</span><span class="fa-stat-lbl">SV</span></span>{% endif %}
+                        {% if p.proj_IP is not none and p.proj_IP == p.proj_IP and p.proj_IP > 1 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_IP) }}</span><span class="fa-stat-lbl">IP</span></span>{% endif %}
+                        {% if p['proj_K-BB%'] is not none and p['proj_K-BB%'] == p['proj_K-BB%'] %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.1f'|format(p['proj_K-BB%'] * 100) }}%</span><span class="fa-stat-lbl">K-BB%</span></span>{% endif %}
+                      {% else %}
+                        {% if p.proj_HR is not none and p.proj_HR == p.proj_HR %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_HR) }}</span><span class="fa-stat-lbl">HR</span></span>{% endif %}
+                        {% if p.proj_R is not none and p.proj_R == p.proj_R %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_R) }}</span><span class="fa-stat-lbl">R</span></span>{% endif %}
+                        {% if p.proj_RBI is not none and p.proj_RBI == p.proj_RBI %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_RBI) }}</span><span class="fa-stat-lbl">RBI</span></span>{% endif %}
+                        {% if p.proj_SB is not none and p.proj_SB == p.proj_SB %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SB) }}</span><span class="fa-stat-lbl">SB</span></span>{% endif %}
+                        {% if p.proj_AVG is not none and p.proj_AVG == p.proj_AVG %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.3f'|format(p.proj_AVG) }}</span><span class="fa-stat-lbl">AVG</span></span>{% endif %}
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="fa-card-right">
+                    <div class="fa-score-block">
+                      <div class="fa-score {% if p.proj_CompositeScore is not none and p.proj_CompositeScore > 1.5 %}fa-score-great{% elif p.proj_CompositeScore is not none and p.proj_CompositeScore > 1.0 %}fa-score-good{% endif %}">{{ '%.2f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '—' }}</div>
+                      <div class="fa-score-lbl">Proj</div>
+                    </div>
+                    <div class="fa-score-block">
+                      <div class="fa-score fa-score-curr">{{ '%.2f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '—' }}</div>
+                      <div class="fa-score-lbl">Curr</div>
+                    </div>
+                    <a class="btn-link fa-cmp-btn" href="/compare?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&p1={{ p.Name }}">Compare</a>
+                  </div>
+                </div>
+                {% endfor %}
+                {% endif %}
               </div>
               {% endif %}
             {% elif view=='team' and roster %}
-              <div class="table roster-table" data-sortable="true">
-                <div class="trow thead">
-                  <div class="sortable" data-type="string">Name</div>
-                  <div class="sortable" data-type="string">Team</div>
-                  <div class="sortable" data-type="string">Pos</div>
-                  <div class="sortable" data-type="number">Proj</div>
-                  <div class="sortable" data-type="number">Curr</div>
-                  <div></div>
-                </div>
+              <div class="fa-list" id="rosterList">
                 {% for p in roster %}
-                <div class="trow">
-                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a> <a class="cmp-btn" href="/compare?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&p1={{ p.display_name }}" title="Compare">vs</a></div>
-                  <div>{{ p.Team }}</div>
-                  <div>{{ p.position }}</div>
-                  <div>{{ '%.3f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '' }}</div>
-                  <div>{{ '%.3f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '' }}</div>
-                  <div><a class="upgrade-link" href="/add-drop?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&pos={{ p.position.split(',')[0].strip() }}">Find upgrade →</a></div>
+                {% set is_pitcher = p.position and ('P' in p.position or 'Pitcher' in p.position) %}
+                {% set score_delta = p.ScoreDelta if p.ScoreDelta is defined and p.ScoreDelta == p.ScoreDelta else none %}
+                <div class="fa-card">
+                  <div class="fa-card-left">
+                    <div class="fa-card-identity">
+                      <div class="fa-card-name">
+                        <a class="link" href="/player?name={{ p.Name }}">{{ p.Name }}</a>
+                        {% if p.injury_status and p.injury_status not in ('ACTIVE', '', 'None') %}<span class="badge concern">{{ p.injury_status }}</span>{% endif %}
+                      </div>
+                      <div class="fa-card-meta">
+                        {{ p.Team or '—' }}
+                        {% if p.pos_ranks_str is defined and p.pos_ranks_str %} · {{ p.pos_ranks_str }}{% endif %}
+                        {% if p.fantasy_points and p.fantasy_points > 0 %} · {{ '%.0f'|format(p.fantasy_points) }} pts{% endif %}
+                      </div>
+                    </div>
+                    <div class="fa-card-stats">
+                      {% if is_pitcher %}
+                        {% if p.proj_ERA is not none and p.proj_ERA == p.proj_ERA %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_ERA) }}</span><span class="fa-stat-lbl">ERA</span></span>{% endif %}
+                        {% if p.proj_WHIP is not none and p.proj_WHIP == p.proj_WHIP and p.proj_WHIP > 0 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_WHIP) }}</span><span class="fa-stat-lbl">WHIP</span></span>{% endif %}
+                        {% if p.proj_SV is not none and p.proj_SV == p.proj_SV %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SV) }}</span><span class="fa-stat-lbl">SV</span></span>{% endif %}
+                        {% if p.proj_IP is not none and p.proj_IP == p.proj_IP and p.proj_IP > 1 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_IP) }}</span><span class="fa-stat-lbl">IP</span></span>{% endif %}
+                        {% if p['proj_K-BB%'] is not none and p['proj_K-BB%'] == p['proj_K-BB%'] %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.1f'|format(p['proj_K-BB%'] * 100) }}%</span><span class="fa-stat-lbl">K-BB%</span></span>{% endif %}
+                      {% else %}
+                        {% if p.proj_HR is not none and p.proj_HR == p.proj_HR %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_HR) }}</span><span class="fa-stat-lbl">HR</span></span>{% endif %}
+                        {% if p.proj_R is not none and p.proj_R == p.proj_R %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_R) }}</span><span class="fa-stat-lbl">R</span></span>{% endif %}
+                        {% if p.proj_RBI is not none and p.proj_RBI == p.proj_RBI %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_RBI) }}</span><span class="fa-stat-lbl">RBI</span></span>{% endif %}
+                        {% if p.proj_SB is not none and p.proj_SB == p.proj_SB %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SB) }}</span><span class="fa-stat-lbl">SB</span></span>{% endif %}
+                        {% if p.proj_AVG is not none and p.proj_AVG == p.proj_AVG %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.3f'|format(p.proj_AVG) }}</span><span class="fa-stat-lbl">AVG</span></span>{% endif %}
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="fa-card-right">
+                    <div class="fa-score-block">
+                      <div class="fa-score {% if p.proj_CompositeScore is not none and p.proj_CompositeScore > 1.5 %}fa-score-great{% elif p.proj_CompositeScore is not none and p.proj_CompositeScore > 1.0 %}fa-score-good{% endif %}">{{ '%.2f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '—' }}</div>
+                      <div class="fa-score-lbl">Proj</div>
+                    </div>
+                    <div class="fa-score-block">
+                      <div class="fa-score fa-score-curr">{{ '%.2f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '—' }}</div>
+                      <div class="fa-score-lbl">Curr</div>
+                    </div>
+                    <a class="btn-link fa-cmp-btn" href="/compare?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&p1={{ p.Name }}">Compare</a>
+                    <a class="btn-link fa-cmp-btn" href="/add-drop?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&pos={{ p.position.split(',')[0].strip() }}">Upgrade</a>
+                  </div>
                 </div>
                 {% endfor %}
               </div>
@@ -215,41 +424,173 @@
                 {% endfor %}
               </div>
             {% elif view=='compare' %}
-              <form class="cmp" method="get" action="/compare">
+              {# ── Search ── #}
+              <form class="cmp-search-form" method="get" action="/compare">
                 <input type="hidden" name="team" value="{{selected_team}}" />
                 <input type="hidden" name="hideInjured" value="{{ 'true' if hide_injured else 'false'}}" />
-                <input type="hidden" name="minScore" value="{{min_score}}" />
-                <div class="cmp-grid">
+                <div class="cmp-inputs">
                   <div class="ac-wrap"><input name="p1" placeholder="Player 1" value="{{ p1 or '' }}" autocomplete="off" class="ac-input" /><div class="ac-list"></div></div>
+                  <span class="cmp-vs">vs</span>
                   <div class="ac-wrap"><input name="p2" placeholder="Player 2" value="{{ p2 or '' }}" autocomplete="off" class="ac-input" /><div class="ac-list"></div></div>
-                  <button class="primary" type="submit">Compare</button>
+                  <button class="btn-link" type="submit">Compare</button>
                 </div>
               </form>
-              <div class="cmp-results">
-                 <div class="table" data-sortable="true">
-                   <div class="trow thead">
-                     <div class="sortable" data-type="string"></div>
-                     <div class="sortable" data-type="string">Team</div>
-                     <div class="sortable" data-type="string">Pos</div>
-                     <div class="sortable" data-type="number">Proj</div>
-                     <div class="sortable" data-type="number">Curr</div>
-                   </div>
-                  <div class="trow">
-                    <div>{% if cmp1 %}<a class="link" href="/player?name={{ cmp1.display_name }}">{{ cmp1.display_name }}</a>{% else %}{% endif %}</div>
-                    <div>{{ cmp1.Team if cmp1 else '' }}</div>
-                    <div>{{ cmp1.position if cmp1 else '' }}</div>
-                     <div>{{ '%.3f'|format(cmp1.proj_CompositeScore) if cmp1 and cmp1.proj_CompositeScore is not none else '' }}</div>
-                     <div>{{ '%.3f'|format(cmp1.curr_CompositeScore) if cmp1 and cmp1.curr_CompositeScore is not none else '' }}</div>
+
+              {# ── Results ── #}
+              {% if cmp1 or cmp2 %}
+              {% set p1_proj = cmp1.proj_CompositeScore if cmp1 and cmp1.proj_CompositeScore is not none else 0 %}
+              {% set p2_proj = cmp2.proj_CompositeScore if cmp2 and cmp2.proj_CompositeScore is not none else 0 %}
+              {% set p1_curr = cmp1.curr_CompositeScore if cmp1 and cmp1.curr_CompositeScore is not none else 0 %}
+              {% set p2_curr = cmp2.curr_CompositeScore if cmp2 and cmp2.curr_CompositeScore is not none else 0 %}
+
+              {# ── Player header ── #}
+              {% set proj_total = p1_proj + p2_proj %}
+              {% set curr_total = p1_curr + p2_curr %}
+              {% set proj_pct = (p1_proj / proj_total * 100)|int if proj_total > 0 else 50 %}
+              {% set curr_pct = (p1_curr / curr_total * 100)|int if curr_total > 0 else 50 %}
+              <div class="cmp-header">
+                {# Names row #}
+                <div class="cmp-names">
+                  <div class="cmp-player-info">
+                    {% if cmp1 %}
+                    <div class="cmp-player-name"><a href="/player?name={{ cmp1.Name }}">{{ cmp1.Name }}</a>{% if cmp1.injury_status and cmp1.injury_status not in ('ACTIVE','','None') %} <span class="badge concern">{{ cmp1.injury_status }}</span>{% endif %}</div>
+                    <div class="cmp-player-meta">{{ cmp1.Team or '—' }} · {{ cmp1.position or '—' }}{% if cmp1.pos_ranks_str is defined and cmp1.pos_ranks_str %}<br>{{ cmp1.pos_ranks_str }}{% endif %}</div>
+                    {% else %}<div class="cmp-card-empty">No player selected</div>{% endif %}
                   </div>
-                  <div class="trow">
-                    <div>{% if cmp2 %}<a class="link" href="/player?name={{ cmp2.display_name }}">{{ cmp2.display_name }}</a>{% else %}{% endif %}</div>
-                    <div>{{ cmp2.Team if cmp2 else '' }}</div>
-                    <div>{{ cmp2.position if cmp2 else '' }}</div>
-                     <div>{{ '%.3f'|format(cmp2.proj_CompositeScore) if cmp2 and cmp2.proj_CompositeScore is not none else '' }}</div>
-                     <div>{{ '%.3f'|format(cmp2.curr_CompositeScore) if cmp2 and cmp2.curr_CompositeScore is not none else '' }}</div>
+                  <div class="cmp-player-info cmp-player-info-right">
+                    {% if cmp2 %}
+                    <div class="cmp-player-name"><a href="/player?name={{ cmp2.Name }}">{{ cmp2.Name }}</a>{% if cmp2.injury_status and cmp2.injury_status not in ('ACTIVE','','None') %} <span class="badge concern">{{ cmp2.injury_status }}</span>{% endif %}</div>
+                    <div class="cmp-player-meta">{{ cmp2.Team or '—' }} · {{ cmp2.position or '—' }}{% if cmp2.pos_ranks_str is defined and cmp2.pos_ranks_str %}<br>{{ cmp2.pos_ranks_str }}{% endif %}</div>
+                    {% else %}<div class="cmp-card-empty">No player selected</div>{% endif %}
+                  </div>
+                </div>
+
+                {# Score bars #}
+                <div class="cmp-score-rows">
+                  {# Projected #}
+                  <div class="cmp-score-row">
+                    <div class="cmp-score-row-labels">
+                      <span class="cmp-score-num proj {% if p1_proj > 1.5 %}great{% elif p1_proj > 1.0 %}good{% endif %}">{{ '%.2f'|format(p1_proj) }}</span>
+                      <span class="cmp-score-row-lbl">Projected</span>
+                      <span class="cmp-score-num proj {% if p2_proj > 1.5 %}great{% elif p2_proj > 1.0 %}good{% endif %}">{{ '%.2f'|format(p2_proj) }}</span>
+                    </div>
+                    {% set p1_lead = [((proj_pct - 50) * 2), 0]|max %}
+                    {% set p2_lead = [((50 - proj_pct) * 2), 0]|max %}
+                    <div class="tow-bar {% if p2_proj > p1_proj %}right-wins{% elif p1_proj == p2_proj %}tied{% endif %}">
+                      <div class="tow-half tow-half-left"><div class="tow-fill" style="width:{{ p1_lead }}%"></div></div>
+                      <div class="tow-half tow-half-right"><div class="tow-fill" style="width:{{ p2_lead }}%"></div></div>
+                    </div>
+                  </div>
+                  {# Current #}
+                  <div class="cmp-score-row">
+                    <div class="cmp-score-row-labels">
+                      <span class="cmp-score-num curr">{{ '%.2f'|format(p1_curr) if p1_curr else '—' }}</span>
+                      <span class="cmp-score-row-lbl">Current</span>
+                      <span class="cmp-score-num curr">{{ '%.2f'|format(p2_curr) if p2_curr else '—' }}</span>
+                    </div>
+                    {% set c1_lead = [((curr_pct - 50) * 2), 0]|max %}
+                    {% set c2_lead = [((50 - curr_pct) * 2), 0]|max %}
+                    <div class="tow-bar sm {% if p2_curr > p1_curr %}right-wins{% elif p1_curr == p2_curr %}tied{% endif %}">
+                      <div class="tow-half tow-half-left"><div class="tow-fill" style="width:{{ c1_lead }}%"></div></div>
+                      <div class="tow-half tow-half-right"><div class="tow-fill" style="width:{{ c2_lead }}%"></div></div>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {# ── Tug-of-war stat rows ── #}
+              {% if cmp1 and cmp2 %}
+              {% set is_pitcher = 'P' in ((cmp1.position or '') ~ (cmp2.position or '')) %}
+              {% if is_pitcher %}
+                {% set proj_stats = [
+                  ('ERA',   'proj_ERA',   True,  '%.2f'),
+                  ('WHIP',  'proj_WHIP',  True,  '%.2f'),
+                  ('FIP',   'proj_FIP',   True,  '%.2f'),
+                  ('K-BB%', 'proj_K-BB%', False, 'pct'),
+                  ('SV',    'proj_SV',    False, '%.0f'),
+                  ('IP',    'proj_IP',    False, '%.0f'),
+                ] %}
+                {% set curr_stats = [
+                  ('ERA',   'curr_ERA',   True,  '%.2f'),
+                  ('WHIP',  'curr_WHIP',  True,  '%.2f'),
+                  ('FIP',   'curr_FIP',   True,  '%.2f'),
+                  ('K-BB%', 'curr_K-BB%', False, 'pct'),
+                  ('SV',    'curr_SV',    False, '%.0f'),
+                  ('IP',    'curr_IP',    False, '%.0f'),
+                ] %}
+              {% else %}
+                {% set proj_stats = [
+                  ('HR',   'proj_HR',   False, '%.0f'),
+                  ('R',    'proj_R',    False, '%.0f'),
+                  ('RBI',  'proj_RBI',  False, '%.0f'),
+                  ('SB',   'proj_SB',   False, '%.0f'),
+                  ('AVG',  'proj_AVG',  False, '%.3f'),
+                  ('wOBA', 'proj_wOBA', False, '%.3f'),
+                ] %}
+                {% set curr_stats = [
+                  ('HR',   'curr_HR',   False, '%.0f'),
+                  ('R',    'curr_R',    False, '%.0f'),
+                  ('RBI',  'curr_RBI',  False, '%.0f'),
+                  ('SB',   'curr_SB',   False, '%.0f'),
+                  ('AVG',  'curr_AVG',  False, '%.3f'),
+                  ('wOBA', 'curr_wOBA', False, '%.3f'),
+                ] %}
+              {% endif %}
+              {# macro-style: render one stat block #}
+              {% for block_label, stats in [('Projected', proj_stats), ('Current', curr_stats)] %}
+              {% set has_any = namespace(v=false) %}
+              {% for label, key, lower_better, fmt in stats %}
+                {% set v1 = cmp1.get(key) %}
+                {% set v2 = cmp2.get(key) %}
+                {% if v1 is not none and v1 == v1 and v2 is not none and v2 == v2 %}{% set has_any.v = true %}{% endif %}
+              {% endfor %}
+              {% if has_any.v %}
+              <div class="cmp-stats">
+                <div class="cmp-stats-header">
+                  <span>{{ cmp1.Name.split(' ')[0] if cmp1 else '' }}</span>
+                  <span>{{ block_label }}</span>
+                  <span>{{ cmp2.Name.split(' ')[0] if cmp2 else '' }}</span>
+                </div>
+                {% for label, key, lower_better, fmt in stats %}
+                  {% set v1 = cmp1.get(key) if cmp1 else none %}
+                  {% set v2 = cmp2.get(key) if cmp2 else none %}
+                  {% if v1 is not none and v1 == v1 and v2 is not none and v2 == v2 %}
+                  {% set p1_wins = (v1 < v2) if lower_better else (v1 > v2) %}
+                  {% set p2_wins = (v2 < v1) if lower_better else (v2 > v1) %}
+                  {% set total = (v1|abs) + (v2|abs) %}
+                  {% set tow_pct = ((v1|abs) / total * 100) if total > 0 else 50 %}
+                  {% set s1_lead = [((tow_pct - 50) * 2), 0]|max %}
+                  {% set s2_lead = [((50 - tow_pct) * 2), 0]|max %}
+                  <div class="cmp-stat-row">
+                    <div class="cmp-stat-left">
+                      <span class="cmp-stat-val {% if p1_wins %}winner{% endif %}">
+                        {%- if fmt == 'pct' %}{{ '%.1f'|format(v1 * 100) }}%
+                        {%- else %}{{ fmt|format(v1) }}{%- endif %}
+                      </span>
+                    </div>
+                    <div class="cmp-stat-mid">
+                      <span class="cmp-stat-label">{{ label }}</span>
+                    </div>
+                    <div class="cmp-stat-right">
+                      <span class="cmp-stat-val {% if p2_wins %}winner{% endif %}">
+                        {%- if fmt == 'pct' %}{{ '%.1f'|format(v2 * 100) }}%
+                        {%- else %}{{ fmt|format(v2) }}{%- endif %}
+                      </span>
+                    </div>
+                    <div class="cmp-stat-bar-row">
+                      <div class="tow-bar sm {% if p2_wins %}right-wins{% elif not p1_wins and not p2_wins %}tied{% endif %}">
+                        <div class="tow-half tow-half-left"><div class="tow-fill" style="width:{{ s1_lead }}%"></div></div>
+                        <div class="tow-half tow-half-right"><div class="tow-fill" style="width:{{ s2_lead }}%"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+              {% endif %}
             {% elif view=='draft' %}
               {% if not has_draft %}
               <div class="draft-empty">
@@ -447,70 +788,124 @@
                 </div>
                 {% endfor %}
               </div>
-            {% else %}
-              <div class="empty">No data available for this view.</div>
-            {% endif %}
-            {% if view=='players' %}
-              <form class="cmp" method="get" action="/players" style="margin-bottom:10px">
-                <input type="hidden" name="team" value="{{selected_team}}" />
-                <input type="hidden" name="hideInjured" value="{{ 'true' if hide_injured else 'false'}}" />
-                <input type="hidden" name="minScore" value="{{min_score}}" />
-                <div class="cmp-grid">
-                  <div class="ac-wrap"><input name="q" placeholder="Search name" value="{{ q or '' }}" autocomplete="off" class="ac-input" /><div class="ac-list"></div></div>
-                  <select name="pos">
-                    <option value="">Any Position</option>
-                    {% for p in positions %}
-                      <option value="{{p}}" {% if pos==p %}selected{% endif %}>{{p}}</option>
+            {% elif view=='players' %}
+              {# ── Toolbar ── #}
+              {% set pqs = "team=" ~ selected_team ~ "&hideInjured=" ~ ('true' if hide_injured else 'false') ~ "&q=" ~ (q or '') ~ "&pos=" ~ (pos or '') ~ "&roster=" ~ (roster or '') ~ "&sort=" ~ (sort or 'proj') ~ "&per=" ~ per %}
+              <div class="players-toolbar">
+                <form class="players-search-form" method="get" action="/players" autocomplete="off">
+                  <input type="hidden" name="team" value="{{selected_team}}" />
+                  <input type="hidden" name="hideInjured" value="{{ 'true' if hide_injured else 'false'}}" />
+                  <input type="hidden" name="per" value="{{ per }}" />
+                  <div class="ac-wrap players-search-wrap"><input name="q" placeholder="Search players…" value="{{ q or '' }}" autocomplete="off" class="ac-input players-search-input" /><div class="ac-list"></div></div>
+                </form>
+                <div class="players-filter-row">
+                  {# Position pills #}
+                  <div class="fa-sort-pills players-pos-pills">
+                    <a class="pill {% if not pos %}active{% endif %}" href="/players?{{ pqs }}&pos=&page=1">All</a>
+                    {% for p_opt in positions %}
+                    <a class="pill {% if pos==p_opt %}active{% endif %}" href="/players?{{ pqs }}&pos={{p_opt}}&page=1">{{p_opt}}</a>
                     {% endfor %}
-                  </select>
-                  <select name="roster">
-                    <option value="">Any Roster</option>
-                    <option value="Free Agent" {% if roster=='Free Agent' %}selected{% endif %}>Free Agent</option>
-                    {% for t in teams %}
-                      <option value="{{t}}" {% if roster==t %}selected{% endif %}>{{t}}</option>
-                    {% endfor %}
-                  </select>
-                  <select name="sort">
-                    <option value="proj" {% if sort=='proj' %}selected{% endif %}>Sort: Proj</option>
-                    <option value="curr" {% if sort=='curr' %}selected{% endif %}>Sort: Curr</option>
-                    <option value="name" {% if sort=='name' %}selected{% endif %}>Sort: Name</option>
-                  </select>
-                  <select name="per">
-                    {% for n in [25,50,100,200] %}
-                      <option value="{{n}}" {% if per==n %}selected{% endif %}>{{n}} / page</option>
-                    {% endfor %}
-                  </select>
-                  <button class="primary" type="submit">Apply</button>
+                  </div>
+                  {# Sort pills #}
+                  <div class="fa-sort-pills">
+                    <a class="pill {% if sort=='proj' or not sort %}active{% endif %}" href="/players?{{ pqs }}&sort=proj&page=1">Proj</a>
+                    <a class="pill {% if sort=='curr' %}active{% endif %}" href="/players?{{ pqs }}&sort=curr&page=1">Current</a>
+                    <a class="pill {% if sort=='name' %}active{% endif %}" href="/players?{{ pqs }}&sort=name&page=1">Name</a>
+                  </div>
+                  {# Roster filter #}
+                  <div class="fa-sort-pills">
+                    <a class="pill {% if not roster %}active{% endif %}" href="/players?{{ pqs }}&roster=&page=1">All rosters</a>
+                    <a class="pill {% if roster=='Free Agent' %}active{% endif %}" href="/players?{{ pqs }}&roster=Free+Agent&page=1">Free agents</a>
+                    <a class="pill {% if roster==selected_team %}active{% endif %}" href="/players?{{ pqs }}&roster={{ selected_team }}&page=1">My roster</a>
+                  </div>
                 </div>
-              </form>
-              <div class="table" data-sortable="true">
-                <div class="trow thead">
-                  <div class="sortable" data-type="string">Name</div>
-                  <div class="sortable" data-type="string">Team</div>
-                  <div class="sortable" data-type="string">Pos</div>
-                  <div class="sortable" data-type="number">Proj</div>
-                  <div class="sortable" data-type="number">Curr</div>
-                </div>
+              </div>
+
+              {# ── Summary bar ── #}
+              {% set total_pages = (total // per) + (1 if (total % per) else 0) %}
+              <div class="adddrop-summary">
+                <span>{{ total }} players</span>
+                <span>Page {{ page }} of {{ total_pages }}</span>
+              </div>
+
+              {# ── Cards ── #}
+              <div class="fa-list">
                 {% for p in players %}
-                <div class="trow">
-                  <div><a class="link" href="/player?name={{ p.display_name }}">{{ p.display_name }}</a> <a class="cmp-btn" href="/compare?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&p1={{ p.display_name }}" title="Compare">vs</a></div>
-                  <div>{{ p.Team }}</div>
-                  <div>{{ p.position }}</div>
-                  <div>{{ '%.3f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '' }}</div>
-                  <div>{{ '%.3f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '' }}</div>
+                {% set is_pitcher = p.position and ('P' in p.position or 'Pitcher' in p.position) %}
+                {% set is_fa = not p.fantasy_team or p.fantasy_team|lower in ('', 'fa', 'free agent') %}
+                <div class="fa-card {% if not is_fa %}fa-card-roster{% endif %}">
+                  <div class="fa-card-left">
+                    <div class="fa-card-identity">
+                      <div class="fa-card-name">
+                        <a class="link" href="/player?name={{ p.Name }}">{{ p.Name }}</a>
+                        {% if p.injury_status and p.injury_status not in ('ACTIVE', '', 'None') %}<span class="badge concern">{{ p.injury_status }}</span>{% endif %}
+                        {% if not is_fa %}<span class="badge">{{ p.fantasy_team }}</span>{% endif %}
+                      </div>
+                      <div class="fa-card-meta">
+                        {{ p.Team or '—' }}
+                        {% if p.pos_ranks_str is defined and p.pos_ranks_str %} · {{ p.pos_ranks_str }}{% endif %}
+                        {% if p.fantasy_points and p.fantasy_points > 0 %} · {{ '%.0f'|format(p.fantasy_points) }} pts{% endif %}
+                      </div>
+                    </div>
+                    <div class="fa-card-stats">
+                      {% if is_pitcher %}
+                        {% if p.proj_ERA is not none and p.proj_ERA == p.proj_ERA %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_ERA) }}</span><span class="fa-stat-lbl">ERA</span></span>{% endif %}
+                        {% if p.proj_WHIP is not none and p.proj_WHIP == p.proj_WHIP and p.proj_WHIP > 0 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_WHIP) }}</span><span class="fa-stat-lbl">WHIP</span></span>{% endif %}
+                        {% if p.proj_SV is not none and p.proj_SV == p.proj_SV %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SV) }}</span><span class="fa-stat-lbl">SV</span></span>{% endif %}
+                        {% if p.proj_IP is not none and p.proj_IP == p.proj_IP and p.proj_IP > 1 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_IP) }}</span><span class="fa-stat-lbl">IP</span></span>{% endif %}
+                        {% if p['proj_K-BB%'] is not none and p['proj_K-BB%'] == p['proj_K-BB%'] %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.1f'|format(p['proj_K-BB%'] * 100) }}%</span><span class="fa-stat-lbl">K-BB%</span></span>{% endif %}
+                      {% else %}
+                        {% if p.proj_HR is not none and p.proj_HR == p.proj_HR %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_HR) }}</span><span class="fa-stat-lbl">HR</span></span>{% endif %}
+                        {% if p.proj_R is not none and p.proj_R == p.proj_R %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_R) }}</span><span class="fa-stat-lbl">R</span></span>{% endif %}
+                        {% if p.proj_RBI is not none and p.proj_RBI == p.proj_RBI %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_RBI) }}</span><span class="fa-stat-lbl">RBI</span></span>{% endif %}
+                        {% if p.proj_SB is not none and p.proj_SB == p.proj_SB %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SB) }}</span><span class="fa-stat-lbl">SB</span></span>{% endif %}
+                        {% if p.proj_AVG is not none and p.proj_AVG == p.proj_AVG %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.3f'|format(p.proj_AVG) }}</span><span class="fa-stat-lbl">AVG</span></span>{% endif %}
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="fa-card-right">
+                    <div class="fa-score-block">
+                      <div class="fa-score {% if p.proj_CompositeScore is not none and p.proj_CompositeScore > 1.5 %}fa-score-great{% elif p.proj_CompositeScore is not none and p.proj_CompositeScore > 1.0 %}fa-score-good{% endif %}">{{ '%.2f'|format(p.proj_CompositeScore) if p.proj_CompositeScore is not none else '—' }}</div>
+                      <div class="fa-score-lbl">Proj</div>
+                    </div>
+                    <div class="fa-score-block">
+                      <div class="fa-score fa-score-curr">{{ '%.2f'|format(p.curr_CompositeScore) if p.curr_CompositeScore is not none else '—' }}</div>
+                      <div class="fa-score-lbl">Curr</div>
+                    </div>
+                    <a class="btn-link fa-cmp-btn" href="/compare?team={{selected_team}}&hideInjured={{'true' if hide_injured else 'false'}}&p1={{ p.Name }}">Compare</a>
+                  </div>
                 </div>
                 {% endfor %}
               </div>
-              <div class="pagination" style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
-                {% set total_pages = (total // per) + (1 if (total % per) else 0) %}
-                <span class="meta">Page {{ page }} of {{ total_pages }}</span>
+
+              {# ── Pagination ── #}
+              <div class="players-pagination">
                 {% if page>1 %}
-                  <a class="tab" href="/players?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}&minScore={{min_score}}&q={{q}}&pos={{pos}}&roster={{roster}}&sort={{sort}}&per={{per}}&page={{page-1}}">Prev</a>
+                  <a class="pill" href="/players?{{ pqs }}&page={{ page-1 }}">← Prev</a>
                 {% endif %}
+                <span class="meta">{{ page }} / {{ total_pages }}</span>
                 {% if page<total_pages %}
-                  <a class="tab" href="/players?team={{selected_team}}&hideInjured={{ 'true' if hide_injured else 'false'}}&minScore={{min_score}}&q={{q}}&pos={{pos}}&roster={{roster}}&sort={{sort}}&per={{per}}&page={{page+1}}">Next</a>
+                  <a class="pill" href="/players?{{ pqs }}&page={{ page+1 }}">Next →</a>
                 {% endif %}
+                <div class="players-per-wrap">
+                  <form method="get" action="/players">
+                    <input type="hidden" name="team" value="{{selected_team}}" />
+                    <input type="hidden" name="hideInjured" value="{{ 'true' if hide_injured else 'false'}}" />
+                    <input type="hidden" name="q" value="{{ q or '' }}" />
+                    <input type="hidden" name="pos" value="{{ pos or '' }}" />
+                    <input type="hidden" name="roster" value="{{ roster or '' }}" />
+                    <input type="hidden" name="sort" value="{{ sort or 'proj' }}" />
+                    <input type="hidden" name="page" value="1" />
+                    <select name="per" class="players-per-select" onchange="this.form.submit()">
+                      {% for n in [25,50,100,200] %}
+                        <option value="{{n}}" {% if per==n %}selected{% endif %}>{{n}} / page</option>
+                      {% endfor %}
+                    </select>
+                  </form>
+                </div>
               </div>
+            {% else %}
+              <div class="empty">No data available for this view.</div>
             {% endif %}
           </div>
         </section>
@@ -575,12 +970,31 @@
       document.getElementById('teamSelect')?.addEventListener('change', applyFilters);
       document.getElementById('hideInjured')?.addEventListener('change', applyFilters);
 
-      document.getElementById('updateBtn')?.addEventListener('click', async () => {
-        const btn = document.getElementById('updateBtn');
-        btn.disabled = true; btn.textContent = 'Updating...';
+      document.querySelector('.update-btn')?.addEventListener('click', async () => {
+        const btn = document.querySelector('.update-btn');
+        const progress = document.getElementById('updateProgress');
+        const label = document.getElementById('updateProgressLabel');
+        const steps = ['Connecting to ESPN…', 'Fetching roster data…', 'Pulling FanGraphs projections…', 'Merging & ranking players…', 'Almost done…'];
+        let stepIdx = 0;
+        btn.disabled = true; btn.textContent = 'Updating…';  // simplified during update
+        progress.classList.add('active');
+        label.textContent = steps[0];
+        const interval = setInterval(() => {
+          stepIdx = Math.min(stepIdx + 1, steps.length - 1);
+          label.textContent = steps[stepIdx];
+        }, 12000);
         const model = document.getElementById('projModelSelect')?.value || '';
         const url = model ? `/update?model=${encodeURIComponent(model)}` : '/update';
-        try { await fetch(url, { method: 'POST' }); location.reload(); } catch (e) {}
+        try {
+          await fetch(url, { method: 'POST' });
+          label.textContent = 'Done! Reloading…';
+          clearInterval(interval);
+          location.reload();
+        } catch (e) {
+          clearInterval(interval);
+          progress.classList.remove('active');
+          btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh Data';
+        }
       });
 
       // Mobile sidebar toggle
@@ -1076,6 +1490,82 @@
           });
           input.addEventListener('blur', () => { setTimeout(()=>{ list.innerHTML=''; list.style.display='none'; }, 150); });
         });
+      })();
+
+      // ── FA list: sort + filter ──
+      (function(){
+        const list = document.getElementById('faList');
+        if(!list) return;
+        const search    = document.getElementById('faSearch');
+        const upgBtn    = document.getElementById('faUpgradesOnly');
+        const rosterBtn = document.getElementById('faShowRoster');
+        const sortBtns  = Array.from(document.querySelectorAll('.fa-sort-pills [data-sort]'));
+
+        // Init state from server-rendered active classes
+        let sortKey    = (document.querySelector('.fa-sort-pills [data-sort].active') || {}).dataset?.sort || 'proj';
+        let upgOnly    = upgBtn?.classList.contains('active') || false;
+        let showRoster = rosterBtn?.classList.contains('active') || false;
+
+        function pushState(){
+          const url = new URL(window.location.href);
+          url.searchParams.set('faSort', sortKey);
+          url.searchParams.set('faRoster', showRoster ? '1' : '0');
+          url.searchParams.set('faUpg', upgOnly ? '1' : '0');
+          // Update all pos-pill hrefs to carry current state
+          document.querySelectorAll('.pos-pills a').forEach(a => {
+            const u = new URL(a.href);
+            u.searchParams.set('faSort', sortKey);
+            u.searchParams.set('faRoster', showRoster ? '1' : '0');
+            u.searchParams.set('faUpg', upgOnly ? '1' : '0');
+            a.href = u.toString();
+          });
+          history.replaceState(null, '', url.toString());
+        }
+
+        function apply(){
+          const q = (search?.value || '').toLowerCase().trim();
+          const cards = Array.from(list.querySelectorAll('.fa-card'));
+
+          cards.forEach(c => {
+            const isRoster  = c.dataset.roster === 'true';
+            const nameMatch = !q || c.dataset.name.includes(q);
+            const upgMatch  = !upgOnly || c.dataset.upgrade === 'true';
+            const rosterOk  = isRoster ? showRoster : true;
+            c.style.display = (nameMatch && upgMatch && rosterOk) ? '' : 'none';
+          });
+
+          const visible = cards.filter(c => c.style.display !== 'none');
+          const dir = sortKey === 'rank' ? 1 : -1;
+          visible.sort((a, b) => (parseFloat(a.dataset[sortKey]||0) - parseFloat(b.dataset[sortKey]||0)) * dir);
+          visible.forEach(c => list.appendChild(c));
+          pushState();
+        }
+
+        sortBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            sortKey = btn.dataset.sort;
+            sortBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            apply();
+          });
+        });
+
+        upgBtn?.addEventListener('click', () => {
+          upgOnly = !upgOnly;
+          upgBtn.classList.toggle('active', upgOnly);
+          apply();
+        });
+
+        rosterBtn?.addEventListener('click', () => {
+          showRoster = !showRoster;
+          rosterBtn.classList.toggle('active', showRoster);
+          apply();
+        });
+
+        search?.addEventListener('input', apply);
+
+        // Apply initial state on load (handles server-restored roster/upg flags)
+        apply();
       })();
     </script>
   </body>

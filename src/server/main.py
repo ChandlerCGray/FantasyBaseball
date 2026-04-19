@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import os
-import subprocess, sys, tempfile
+import re, subprocess, sys, tempfile
 sys.path.insert(0, str((Path(__file__).resolve().parent.parent)))
 from data_utils import expand_positions, format_player_name  # type: ignore
 from draft_strategy_generator import analyze_and_adjust_rankings  # type: ignore
@@ -14,6 +14,9 @@ from fangraphs_api import PROJECTION_MODELS  # type: ignore
 
 BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent.parent
+
+from dotenv import load_dotenv  # type: ignore
+load_dotenv(ROOT_DIR / ".env")
 TEMPLATES_DIR = ROOT_DIR / "templates"
 STATIC_DIR = ROOT_DIR / "static"
 
@@ -24,7 +27,7 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 _PROJ_MODEL_LIST = [(k, v["label"]) for k, v in PROJECTION_MODELS.items()]
 templates.env.globals["PROJECTION_MODELS"] = _PROJ_MODEL_LIST
-templates.env.globals["get_projection_model"] = lambda: os.getenv("PROJECTION_MODEL", "steamer")
+templates.env.globals["get_projection_model"] = lambda: os.getenv("PROJECTION_MODEL", "steamer").strip("'\"")
 
 
 def get_latest_csv() -> str | None:
@@ -47,34 +50,41 @@ def _filters_from_qp(qp, teams: list[str]):
     return selected_team, hide_inj, min_score
 
 
+def _add_ci_mi(positions: list) -> list:
+    """Expand position list with CI/MI eligibility."""
+    extra = []
+    if any(p in positions for p in ("1B", "3B")):
+        extra.append("CI")
+    if any(p in positions for p in ("2B", "SS")):
+        extra.append("MI")
+    return positions + [p for p in extra if p not in positions]
+
 def _prepare_dataframe(csv_path: str) -> pd.DataFrame:
     df = pd.read_csv(csv_path, low_memory=False)
     if "display_name" not in df.columns:
         df["display_name"] = df.apply(format_player_name, axis=1)
     if "norm_positions" not in df.columns:
         df["norm_positions"] = df["position"].apply(expand_positions)
+    df["norm_positions"] = df["norm_positions"].apply(lambda xs: _add_ci_mi(xs) if isinstance(xs, list) else xs)
     if "ScoreDelta" not in df.columns and {"curr_CompositeScore","proj_CompositeScore"}.issubset(df.columns):
         df["ScoreDelta"] = df["curr_CompositeScore"] - df["proj_CompositeScore"]
     df["has_valid_position"] = df["norm_positions"].apply(lambda x: isinstance(x, list) and len(x) > 0)
     return df
 
 
-def _compute_upgrades(df: pd.DataFrame, team: str, hide_injured: bool, min_score: float, pos: str = ""):
-    if hide_injured:
-        df = df[~df["display_name"].str.contains(r"\(", na=False)]
-
-    # Split team vs FA
+def _compute_upgrades(df: pd.DataFrame, team: str, hide_injured: bool, min_score: float, filter_pos: str = ""):
+    # Don't hide injured from FAs — an injured FA can still be worth picking up
     team_df = df[(df["fantasy_team"] == team) & (df["has_valid_position"])].copy()
-    fa_df = df[(df["has_valid_position"]) & ((df["fantasy_team"].isna()) | (df["fantasy_team"].isin(["Free Agent","FA"])))]
+    fa_df = df[(df["has_valid_position"]) & ((df["fantasy_team"].isna()) | (df["fantasy_team"].isin(["Free Agent","FA"])))].copy()
 
     if team_df.empty or fa_df.empty:
         return []
 
-    candidates = fa_df.sort_values("proj_CompositeScore", ascending=False).head(50)
+    candidates = fa_df.sort_values("proj_CompositeScore", ascending=False).head(150)
     upgrades = []
     for _, fa in candidates.iterrows():
-        for pos in fa.get("norm_positions", []):
-            eligible = team_df[team_df["norm_positions"].apply(lambda xs: isinstance(xs, list) and pos in xs)]
+        for fa_pos in (fa.get("norm_positions") or []):
+            eligible = team_df[team_df["norm_positions"].apply(lambda xs: isinstance(xs, list) and fa_pos in xs)]
             if eligible.empty:
                 continue
             drops = eligible[eligible["proj_CompositeScore"] < fa["proj_CompositeScore"]]
@@ -82,32 +92,81 @@ def _compute_upgrades(df: pd.DataFrame, team: str, hide_injured: bool, min_score
                 continue
             drop = drops.nsmallest(1, "proj_CompositeScore").iloc[0]
             gain = float(fa["proj_CompositeScore"]) - float(drop["proj_CompositeScore"])
-            if gain <= 0.15:
+            if gain < 0.05:
                 continue
-            key = (pos, str(drop.get("display_name")))
+            key = (fa_pos, str(drop.get("display_name")))
             existing_idx = next((i for i, u in enumerate(upgrades) if (u["pos"], u["drop"]["display_name"]) == key), None)
-            item = {"pos": pos, "add": fa.to_dict(), "drop": drop.to_dict(), "gain": round(gain, 2)}
+            item = {"pos": fa_pos, "add": fa.to_dict(), "drop": drop.to_dict(), "gain": round(gain, 2)}
             if existing_idx is not None:
                 if upgrades[existing_idx]["gain"] < gain:
                     upgrades[existing_idx] = item
             else:
                 upgrades.append(item)
-    result = sorted(upgrades, key=lambda x: x["gain"], reverse=True)
-    if pos:
-        result = [u for u in result if u["pos"] == pos]
-    return result[:5]
 
+    result = sorted(upgrades, key=lambda x: x["gain"], reverse=True)
+    if filter_pos:
+        result = [u for u in result if u["pos"] == filter_pos]
+    return result
+
+
+def _attach_pos_ranks(target_df: pd.DataFrame, all_df: pd.DataFrame) -> pd.DataFrame:
+    """Add pos_ranks_str column: e.g. '#4 1B · #12 CI · #7 OF'"""
+    # Build per-position rank lookup across all valid players
+    all_valid = all_df[all_df["has_valid_position"]].copy()
+    rank_maps = {}
+    for pos in ("C","1B","2B","3B","SS","OF","DH","P","CI","MI"):
+        eligible = all_valid[all_valid["norm_positions"].apply(lambda xs: isinstance(xs, list) and pos in xs)]
+        if eligible.empty:
+            continue
+        rank_maps[pos] = eligible["proj_CompositeScore"].rank(ascending=False, method="min").astype(int)
+
+    def build_str(row):
+        parts = []
+        for pos in (row.get("norm_positions") or []):
+            if pos in rank_maps and row.name in rank_maps[pos].index:
+                parts.append(f"#{rank_maps[pos][row.name]} {pos}")
+        return " · ".join(parts)
+
+    target_df = target_df.copy()
+    target_df["pos_ranks_str"] = target_df.apply(build_str, axis=1)
+
+    def best_rank(row):
+        ranks = []
+        for pos in (row.get("norm_positions") or []):
+            if pos in rank_maps and row.name in rank_maps[pos].index:
+                ranks.append(rank_maps[pos][row.name])
+        return min(ranks) if ranks else 9999
+
+    target_df["best_pos_rank"] = target_df.apply(best_rank, axis=1)
+    return target_df
+
+_FA_COLS = [
+    "display_name", "Team", "position", "injury_status", "fantasy_points",
+    "proj_CompositeScore", "curr_CompositeScore",
+    "proj_HR", "proj_R", "proj_RBI", "proj_SB", "proj_AVG",
+    "proj_ERA", "proj_WHIP", "proj_SV", "proj_IP", "proj_K-BB%",
+]
 
 def _free_agents(df: pd.DataFrame, hide_injured: bool, min_score: float, pos: str = "", limit: int = 100):
     if hide_injured:
         df = df[~df["display_name"].str.contains(r"\(", na=False)]
-    fa_df = df[(df["has_valid_position"]) & ((df["fantasy_team"].isna()) | (df["fantasy_team"].isin(["Free Agent","FA"])))]
+    all_fa = df[(df["has_valid_position"]) & ((df["fantasy_team"].isna()) | (df["fantasy_team"].isin(["Free Agent","FA"])))].copy()
+    all_fa = _attach_pos_ranks(all_fa, df)
+
+    fa_df = all_fa.copy()
     if pos:
         fa_df = fa_df[fa_df["norm_positions"].apply(lambda xs: isinstance(xs, list) and pos in xs)]
-    cols = [c for c in ["display_name","Team","position","proj_CompositeScore","curr_CompositeScore"] if c in fa_df.columns]
+    cols = [c for c in _FA_COLS + ["pos_ranks_str", "best_pos_rank"] if c in fa_df.columns]
     fa_df = fa_df.sort_values("proj_CompositeScore", ascending=False)
     return fa_df[cols].head(limit).to_dict(orient="records")
 
+
+_ROSTER_COLS = [
+    "Name", "display_name", "Team", "position", "injury_status", "fantasy_points",
+    "proj_CompositeScore", "curr_CompositeScore", "ScoreDelta",
+    "proj_HR", "proj_R", "proj_RBI", "proj_SB", "proj_AVG",
+    "proj_ERA", "proj_WHIP", "proj_SV", "proj_IP", "proj_K-BB%",
+]
 
 def _team_roster(df: pd.DataFrame, team: str, hide_injured: bool, pos: str = ""):
     if hide_injured:
@@ -115,7 +174,8 @@ def _team_roster(df: pd.DataFrame, team: str, hide_injured: bool, pos: str = "")
     team_df = df[(df["fantasy_team"] == team) & (df["has_valid_position"])].copy()
     if pos:
         team_df = team_df[team_df["norm_positions"].apply(lambda xs: isinstance(xs, list) and pos in xs)]
-    cols = [c for c in ["display_name","Team","position","proj_CompositeScore","curr_CompositeScore"] if c in team_df.columns]
+    team_df = _attach_pos_ranks(team_df, df)
+    cols = [c for c in _ROSTER_COLS + ["pos_ranks_str", "best_pos_rank"] if c in team_df.columns]
     return team_df[cols].sort_values("proj_CompositeScore", ascending=False).to_dict(orient="records")
 
 
@@ -187,39 +247,19 @@ def _dashboard_data(df: pd.DataFrame, team: str, hide_injured: bool) -> dict:
     team_means = rostered.groupby("fantasy_team")["proj_CompositeScore"].mean().sort_values(ascending=False)
     team_rank = list(team_means.index).index(team) + 1 if team in team_means.index else 0
 
-    # Injured count (check original df before injury filter)
-    injured_count = len(df[(df["fantasy_team"] == team) & df["display_name"].str.contains(r"\(", na=False)])
+    # Injured players on this team
+    injured_mask = df["display_name"].str.contains(r"\(", na=False)
+    injured_rows = df[(df["fantasy_team"] == team) & injured_mask][["display_name", "position"]].to_dict(orient="records")
 
-    # Top upgrade and drop candidate
+    # All top upgrades (up to 5)
     top_upgrades = _compute_upgrades(df, team, hide_injured, -1.0)
-    top_upgrade = top_upgrades[0] if top_upgrades else None
-
-    top_drops = _drop_candidates(df, team, hide_injured, limit=1)
-    top_drop = top_drops[0] if top_drops else None
-
-    # Best replacement specifically for the weakest rostered player (if available).
-    replace_weakest = None
-    if top_drop and top_upgrades:
-        weak_name = str(top_drop.get("display_name", ""))
-        matching = [
-            u for u in top_upgrades
-            if str(u.get("drop", {}).get("display_name", "")) == weak_name
-        ]
-        if matching:
-            replace_weakest = max(matching, key=lambda u: float(u.get("gain", 0) or 0))
-        else:
-            # Fallback to best overall replacement suggestion.
-            replace_weakest = top_upgrade
 
     return {
         "positions": positions_out,
         "team_rank": team_rank,
         "total_teams": len(team_means),
-        "team_proj_mean": round(float(team_means.get(team, 0)), 3),
-        "injured_count": injured_count,
-        "top_upgrade": top_upgrade,
-        "top_drop": top_drop,
-        "replace_weakest": replace_weakest,
+        "upgrades": top_upgrades,
+        "injured": injured_rows,
     }
 
 
@@ -227,6 +267,7 @@ def _league_summary(df: pd.DataFrame, hide_injured: bool):
     if hide_injured:
         df = df[~df["display_name"].str.contains(r"\(", na=False)]
     playable = df[df["has_valid_position"]].copy()
+    playable = playable[~playable["fantasy_team"].fillna("").str.lower().isin(["", "free agent", "fa"])]
     if playable.empty:
         return []
     group = playable.groupby("fantasy_team", dropna=True)
@@ -318,17 +359,24 @@ def _compare_data(df: pd.DataFrame, name1: str, name2: str):
     def pick(name: str):
         if not name:
             return None
-        m = df[df["display_name"].str.contains(name, case=False, na=False)]
-        return m.head(1).to_dict(orient="records")[0] if not m.empty else None
+        # strip injury suffix like " (TEN_DAY_DL)" before searching
+        clean = re.sub(r"\s*\(.*?\)\s*$", "", name).strip()
+        m = df[df["display_name"].str.contains(re.escape(clean), case=False, na=False)]
+        if m.empty:
+            return None
+        sub = _attach_pos_ranks(m.head(1), df)
+        return sub.to_dict(orient="records")[0]
     return pick(name1), pick(name2)
 
+
+_POS_ORDER = ["C","1B","2B","3B","SS","CI","MI","OF","DH","P"]
 
 def _positions_list(df: pd.DataFrame):
     pos_set = set()
     for xs in df.get("norm_positions", []):
         if isinstance(xs, list):
             pos_set.update(xs)
-    return sorted(pos_set)
+    return [p for p in _POS_ORDER if p in pos_set]
 
 
 def _players_filtered(
@@ -367,24 +415,16 @@ def _players_filtered(
     total = len(data)
     start = max((page - 1) * per_page, 0)
     end = start + per_page
+    # Attach pos ranks before slicing so index matches all_df
+    data = _attach_pos_ranks(data, df)
     cols = [
-        "display_name",
-        "Team",
-        "position",
-        "fantasy_team",
-        "proj_CompositeScore",
-        "curr_CompositeScore",
-        "proj_AB",
-        "proj_wOBA",
-        "proj_wRC+",
-        "proj_ISO",
-        "proj_wBsR",
-        "proj_IP",
-        "proj_FIP",
-        "proj_WHIP",
-        "proj_K-BB%",
-        "proj_SV",
-        "injury_status",
+        "Name", "display_name",
+        "Team", "position", "fantasy_team",
+        "injury_status", "fantasy_points",
+        "proj_CompositeScore", "curr_CompositeScore",
+        "proj_HR", "proj_R", "proj_RBI", "proj_SB", "proj_AVG",
+        "proj_ERA", "proj_WHIP", "proj_SV", "proj_IP", "proj_K-BB%",
+        "pos_ranks_str", "best_pos_rank",
     ]
     present = [c for c in cols if c in data.columns]
     page_df = data[present].iloc[start:end].copy()
@@ -424,9 +464,13 @@ def add_drop_view(request: Request):
     teams = sorted([t for t in df["fantasy_team"].dropna().unique() if str(t).lower() not in ["fa", "free agent"]])
     selected_team, hide_inj, min_score = _filters_from_qp(request.query_params, teams)
     pos = request.query_params.get("pos", "")
+    fa_sort = request.query_params.get("faSort", "proj")
+    fa_roster = request.query_params.get("faRoster", "0")
+    fa_upg = request.query_params.get("faUpg", "0")
     positions = _positions_list(df)
     upgrades = _compute_upgrades(df, selected_team, hide_inj, min_score, pos)
     fa = _free_agents(df, hide_inj, min_score, pos)
+    roster = _team_roster(df, selected_team, hide_inj, pos)
     upgrade_names = {u["add"]["display_name"] for u in upgrades} if upgrades else set()
     return templates.TemplateResponse(
         "index.html",
@@ -440,8 +484,12 @@ def add_drop_view(request: Request):
             "upgrades": upgrades,
             "view": "add_drop",
             "fa": fa,
+            "roster": roster,
             "positions": positions,
             "pos": pos,
+            "fa_sort": fa_sort,
+            "fa_roster": fa_roster,
+            "fa_upg": fa_upg,
             "upgrade_names": upgrade_names,
         },
     )
@@ -455,7 +503,7 @@ def player_search(q: str = ""):
         return JSONResponse([])
     df = _prepare_dataframe(csv_path)
     matches = df[df["display_name"].str.contains(q, case=False, na=False)]
-    names = matches.sort_values("proj_CompositeScore", ascending=False)["display_name"].head(10).tolist()
+    names = matches.sort_values("proj_CompositeScore", ascending=False)["Name"].head(10).tolist()
     return JSONResponse(names)
 
 
@@ -563,8 +611,10 @@ def compare(request: Request):
     df = _prepare_dataframe(csv_path)
     teams = sorted([t for t in df["fantasy_team"].dropna().unique() if str(t).lower() not in ["fa", "free agent"]])
     selected_team, hide_inj, min_score = _filters_from_qp(request.query_params, teams)
-    p1 = request.query_params.get("p1", "")
-    p2 = request.query_params.get("p2", "")
+    def _clean_name(s: str) -> str:
+        return re.sub(r"\s*\(.*?\)\s*$", "", s).strip()
+    p1 = _clean_name(request.query_params.get("p1", ""))
+    p2 = _clean_name(request.query_params.get("p2", ""))
     a, b = _compare_data(df, p1, p2)
     return templates.TemplateResponse(
         "index.html",
@@ -614,6 +664,7 @@ def players(request: Request):
             "pos": pos,
             "roster": roster_team,
             "positions": positions,
+            "sort": sort,
             "view": "players",
         },
     )

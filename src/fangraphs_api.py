@@ -5,7 +5,11 @@ def fetch_json_df(url, root_key=None):
     """Fetch and return a DataFrame from a JSON API."""
     try:
         data = requests.get(url).json()
-        return pd.DataFrame(data if root_key is None else data.get(root_key, []))
+        if root_key is not None:
+            data = data.get(root_key, [])
+        if not isinstance(data, list):
+            return pd.DataFrame()
+        return pd.DataFrame(data)
     except Exception as e:
         print(f"ERROR: Failed to fetch {url}: {e}")
         return pd.DataFrame()
@@ -44,27 +48,47 @@ def preprocess_fangraphs(df, mapping, prefix, position_value=None):
 PROJECTION_MODELS = {
     "steamer":     {"label": "Steamer",       "ros": "steamerr",       "full": "steamer"},
     "zips":        {"label": "ZiPS",          "ros": "zipss",          "full": "zips"},
-    "thebat":      {"label": "THE BAT",       "ros": "thebats",        "full": "thebat"},
+    "thebat":      {"label": "THE BAT",       "ros": "thebat",         "full": "thebat"},
+    "thebatx":     {"label": "THE BAT X",     "ros": "thebatx",        "full": "thebatx"},
     "atc":         {"label": "ATC",           "ros": "atc",            "full": "atc"},
     "fangraphsdc": {"label": "Depth Charts",  "ros": "fangraphsdcros", "full": "fangraphsdc"},
 }
+
+def _season_started(season: str) -> bool:
+    from datetime import date
+    try:
+        return date.today() >= date(int(season), 3, 20)
+    except Exception:
+        return False
 
 def get_fangraphs_merged_data(model: str = "steamer"):
     import os
     from datetime import datetime
 
     season = os.getenv("SEASON", str(datetime.now().year))
+    model = model.strip("'\"")  # guard against quoted values in .env
 
-    cfg = PROJECTION_MODELS.get(model, PROJECTION_MODELS["steamer"])
+    cfg = PROJECTION_MODELS.get(model)
+    if cfg is None:
+        print(f"WARNING: Unknown projection model '{model}', falling back to steamer")
+        cfg = PROJECTION_MODELS["steamer"]
     ros_type, full_type = cfg["ros"], cfg["full"]
 
-    # Try rest-of-season first; fall back to full-season preseason projections
-    test = fetch_json_df(f"https://www.fangraphs.com/api/projections?type={ros_type}&stats=bat&pos=all&team=0&players=0&lg=all")
-    if test.empty:
+    # ATC has no separate ROS variant — use as-is
+    if ros_type == full_type:
         proj_type = full_type
-        print(f"INFO: {ros_type} empty — using preseason {full_type} projections")
+        print(f"INFO: Using {cfg['label']} projections ({proj_type})")
     else:
-        proj_type = ros_type
+        test = fetch_json_df(f"https://www.fangraphs.com/api/projections?type={ros_type}&stats=bat&pos=all&team=0&players=0&lg=all")
+        if test.empty:
+            proj_type = full_type
+            if _season_started(season):
+                print(f"WARNING: Season is active but {ros_type} ROS projections are unavailable — falling back to preseason {full_type}. Rankings may be less accurate.")
+            else:
+                print(f"INFO: {ros_type} not yet published — using preseason {full_type} projections")
+        else:
+            proj_type = ros_type
+            print(f"INFO: Using {cfg['label']} rest-of-season projections ({proj_type})")
 
     urls = {
         "proj_bat": f"https://www.fangraphs.com/api/projections?type={proj_type}&stats=bat&pos=all&team=0&players=0&lg=all",

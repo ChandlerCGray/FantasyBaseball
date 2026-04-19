@@ -2,11 +2,21 @@
 
 Fantasy baseball analysis platform combining ESPN league data with FanGraphs projections. FastAPI + Jinja2, dark-themed, mobile-optimized.
 
+Position health, top recommended moves, and league rank.
+
 ![Dashboard](docs/screenshots/dashboard.png)
+
+Free agent upgrades by position with projected score deltas.
+
 ![Add/Drop](docs/screenshots/add-drop.png)
+
+Full roster with projected and current scores.
+
 ![My Team](docs/screenshots/my-team.png)
+
+Draft simulator with tier rankings, ADP, and position supply.
+
 ![Draft Board](docs/screenshots/draft.png)
-![League](docs/screenshots/league.png)
 
 ## Quick Start
 

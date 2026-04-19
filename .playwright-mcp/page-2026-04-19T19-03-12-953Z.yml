@@ -1,0 +1,814 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - img [ref=e5]
+      - generic [ref=e8]: Fantasy Hub
+    - navigation [ref=e9]:
+      - link "Dashboard" [ref=e10] [cursor=pointer]:
+        - /url: /?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e11]
+        - text: Dashboard
+      - link "Add / Drop" [ref=e16] [cursor=pointer]:
+        - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e17]
+        - text: Add / Drop
+      - link "My Team" [ref=e20] [cursor=pointer]:
+        - /url: /team?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e21]
+        - text: My Team
+      - link "All Players" [ref=e26] [cursor=pointer]:
+        - /url: /players?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e27]
+        - text: All Players
+      - link "Compare" [ref=e28] [cursor=pointer]:
+        - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e29]
+        - text: Compare
+      - link "Draft" [ref=e31] [cursor=pointer]:
+        - /url: /draft?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e32]
+        - text: Draft
+      - link "League" [ref=e35] [cursor=pointer]:
+        - /url: /league?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e36]
+        - text: League
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - generic [ref=e40]: Team
+        - combobox [ref=e41]:
+          - option "Caleb's Competitive Team"
+          - option "Land of 10,000 Rakes" [selected]
+          - option "Los twinkies"
+          - option "Mark's Magnificent Team"
+          - option "Mike's team"
+          - option "RIP Griffin Jax (ass)"
+          - option "Roger's Rowdy Team"
+          - option "Team Isaac LLC"
+          - option "Travis's Talented Team"
+          - option "josh's Scary Team"
+      - generic [ref=e42]:
+        - generic [ref=e43]: Projections
+        - combobox [ref=e44]:
+          - option "Steamer" [selected]
+          - option "ZiPS"
+          - option "THE BAT"
+          - option "THE BAT X"
+          - option "ATC"
+          - option "Depth Charts"
+      - generic [ref=e45] [cursor=pointer]:
+        - checkbox "Hide injured" [checked] [ref=e46]
+        - text: Hide injured
+    - generic [ref=e47]:
+      - generic [ref=e48]: free_agents_ranked_20260419_131534.csv
+      - button "Refresh Data" [ref=e49] [cursor=pointer]:
+        - img [ref=e50]
+        - text: Refresh Data
+  - main [ref=e53]:
+    - generic [ref=e54]:
+      - generic [ref=e55]: My Team
+      - generic [ref=e56]: Land of 10,000 Rakes
+    - generic [ref=e58]:
+      - generic [ref=e59]:
+        - link "All" [ref=e60] [cursor=pointer]:
+          - /url: /team?team=Land of 10,000 Rakes&hideInjured=true
+        - link "C" [ref=e61] [cursor=pointer]:
+          - /url: /team?team=Land of 10,000 Rakes&hideInjured=true&pos=C
+        - link "1B" [ref=e62] [cursor=pointer]:
+          - /url: /team?team=Land of 10,000 Rakes&hideInjured=true&pos=1B
+        - link "2B" [ref=e63] [cursor=pointer]:
+          - /url: /team?team=Land of 10,000 Rakes&hideInjured=true&pos=2B
+        - link "3B" [ref=e64] [cursor=pointer]:
+          - /url: /team?team=Land of 10,000 Rakes&hideInjured=true&pos=3B
+        - link "SS" [ref=e65] [cursor=pointer]:
+          - /url: /team?team=Land of 10,000 Rakes&hideInjured=true&pos=SS
+        - link "CI" [ref=e66] [cursor=pointer]:
+          - /url: /team?team=Land of 10,000 Rakes&hideInjured=true&pos=CI
+        - link "MI" [ref=e67] [cursor=pointer]:
+          - /url: /team?team=Land of 10,000 Rakes&hideInjured=true&pos=MI
+        - link "OF" [ref=e68] [cursor=pointer]:
+          - /url: /team?team=Land of 10,000 Rakes&hideInjured=true&pos=OF
+        - link "DH" [ref=e69] [cursor=pointer]:
+          - /url: /team?team=Land of 10,000 Rakes&hideInjured=true&pos=DH
+        - link "P" [ref=e70] [cursor=pointer]:
+          - /url: /team?team=Land of 10,000 Rakes&hideInjured=true&pos=P
+      - generic [ref=e71]:
+        - generic [ref=e72]:
+          - generic [ref=e73]:
+            - generic [ref=e74]:
+              - link "Corbin Carroll" [ref=e76] [cursor=pointer]:
+                - /url: /player?name=Corbin Carroll
+              - generic [ref=e77]: "Ari · #2 OF · 90 pts"
+            - generic [ref=e78]:
+              - generic [ref=e79]:
+                - generic [ref=e80]: "23"
+                - generic [ref=e81]: HR
+              - generic [ref=e82]:
+                - generic [ref=e83]: "87"
+                - generic [ref=e84]: R
+              - generic [ref=e85]:
+                - generic [ref=e86]: "71"
+                - generic [ref=e87]: RBI
+              - generic [ref=e88]:
+                - generic [ref=e89]: "28"
+                - generic [ref=e90]: SB
+              - generic [ref=e91]:
+                - generic [ref=e92]: "0.256"
+                - generic [ref=e93]: AVG
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - generic [ref=e96]: "2.30"
+              - generic [ref=e97]: Proj
+            - generic [ref=e98]:
+              - generic [ref=e99]: "2.93"
+              - generic [ref=e100]: Curr
+            - link "Compare" [ref=e101] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Corbin Carroll
+            - link "Upgrade" [ref=e102] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=OF
+        - generic [ref=e103]:
+          - generic [ref=e104]:
+            - generic [ref=e105]:
+              - link "Ronald Acuna Jr." [ref=e107] [cursor=pointer]:
+                - /url: /player?name=Ronald Acuna Jr.
+              - generic [ref=e108]: "Atl · #3 OF · 61 pts"
+            - generic [ref=e109]:
+              - generic [ref=e110]:
+                - generic [ref=e111]: "24"
+                - generic [ref=e112]: HR
+              - generic [ref=e113]:
+                - generic [ref=e114]: "96"
+                - generic [ref=e115]: R
+              - generic [ref=e116]:
+                - generic [ref=e117]: "70"
+                - generic [ref=e118]: RBI
+              - generic [ref=e119]:
+                - generic [ref=e120]: "24"
+                - generic [ref=e121]: SB
+              - generic [ref=e122]:
+                - generic [ref=e123]: "0.277"
+                - generic [ref=e124]: AVG
+          - generic [ref=e125]:
+            - generic [ref=e126]:
+              - generic [ref=e127]: "2.19"
+              - generic [ref=e128]: Proj
+            - generic [ref=e129]:
+              - generic [ref=e130]: "1.98"
+              - generic [ref=e131]: Curr
+            - link "Compare" [ref=e132] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Ronald Acuna Jr.
+            - link "Upgrade" [ref=e133] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=OF
+        - generic [ref=e134]:
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - link "Oneil Cruz" [ref=e138] [cursor=pointer]:
+                - /url: /player?name=Oneil Cruz
+              - generic [ref=e139]: "Pit · #6 OF · 107 pts"
+            - generic [ref=e140]:
+              - generic [ref=e141]:
+                - generic [ref=e142]: "22"
+                - generic [ref=e143]: HR
+              - generic [ref=e144]:
+                - generic [ref=e145]: "72"
+                - generic [ref=e146]: R
+              - generic [ref=e147]:
+                - generic [ref=e148]: "59"
+                - generic [ref=e149]: RBI
+              - generic [ref=e150]:
+                - generic [ref=e151]: "29"
+                - generic [ref=e152]: SB
+              - generic [ref=e153]:
+                - generic [ref=e154]: "0.240"
+                - generic [ref=e155]: AVG
+          - generic [ref=e156]:
+            - generic [ref=e157]:
+              - generic [ref=e158]: "2.09"
+              - generic [ref=e159]: Proj
+            - generic [ref=e160]:
+              - generic [ref=e161]: "3.18"
+              - generic [ref=e162]: Curr
+            - link "Compare" [ref=e163] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Oneil Cruz
+            - link "Upgrade" [ref=e164] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=OF
+        - generic [ref=e165]:
+          - generic [ref=e166]:
+            - generic [ref=e167]:
+              - link "Mason Miller" [ref=e169] [cursor=pointer]:
+                - /url: /player?name=Mason Miller
+              - generic [ref=e170]: "SD · #1 P · 107 pts"
+            - generic [ref=e171]:
+              - generic [ref=e172]:
+                - generic [ref=e173]: "2.13"
+                - generic [ref=e174]: ERA
+              - generic [ref=e175]:
+                - generic [ref=e176]: "0.02"
+                - generic [ref=e177]: WHIP
+              - generic [ref=e178]:
+                - generic [ref=e179]: "10"
+                - generic [ref=e180]: SV
+              - generic [ref=e181]:
+                - generic [ref=e182]: 412.0%
+                - generic [ref=e183]: K-BB%
+          - generic [ref=e184]:
+            - generic [ref=e185]:
+              - generic [ref=e186]: "2.01"
+              - generic [ref=e187]: Proj
+            - generic [ref=e188]:
+              - generic [ref=e189]: "2.90"
+              - generic [ref=e190]: Curr
+            - link "Compare" [ref=e191] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Mason Miller
+            - link "Upgrade" [ref=e192] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=Pitcher
+        - generic [ref=e193]:
+          - generic [ref=e194]:
+            - generic [ref=e195]:
+              - link "Vladimir Guerrero Jr." [ref=e197] [cursor=pointer]:
+                - /url: /player?name=Vladimir Guerrero Jr.
+              - generic [ref=e198]: "Tor · #4 DH · #1 1B · #2 CI · 66 pts"
+            - generic [ref=e199]:
+              - generic [ref=e200]:
+                - generic [ref=e201]: "27"
+                - generic [ref=e202]: HR
+              - generic [ref=e203]:
+                - generic [ref=e204]: "84"
+                - generic [ref=e205]: R
+              - generic [ref=e206]:
+                - generic [ref=e207]: "87"
+                - generic [ref=e208]: RBI
+              - generic [ref=e209]:
+                - generic [ref=e210]: "4"
+                - generic [ref=e211]: SB
+              - generic [ref=e212]:
+                - generic [ref=e213]: "0.296"
+                - generic [ref=e214]: AVG
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - generic [ref=e217]: "2.00"
+              - generic [ref=e218]: Proj
+            - generic [ref=e219]:
+              - generic [ref=e220]: "2.06"
+              - generic [ref=e221]: Curr
+            - link "Compare" [ref=e222] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Vladimir Guerrero Jr.
+            - link "Upgrade" [ref=e223] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=1B
+        - generic [ref=e224]:
+          - generic [ref=e225]:
+            - generic [ref=e226]:
+              - link "Trea Turner" [ref=e228] [cursor=pointer]:
+                - /url: /player?name=Trea Turner
+              - generic [ref=e229]: "Phi · #4 SS · #4 MI · 63 pts"
+            - generic [ref=e230]:
+              - generic [ref=e231]:
+                - generic [ref=e232]: "15"
+                - generic [ref=e233]: HR
+              - generic [ref=e234]:
+                - generic [ref=e235]: "78"
+                - generic [ref=e236]: R
+              - generic [ref=e237]:
+                - generic [ref=e238]: "58"
+                - generic [ref=e239]: RBI
+              - generic [ref=e240]:
+                - generic [ref=e241]: "23"
+                - generic [ref=e242]: SB
+              - generic [ref=e243]:
+                - generic [ref=e244]: "0.274"
+                - generic [ref=e245]: AVG
+          - generic [ref=e246]:
+            - generic [ref=e247]:
+              - generic [ref=e248]: "1.99"
+              - generic [ref=e249]: Proj
+            - generic [ref=e250]:
+              - generic [ref=e251]: "2.03"
+              - generic [ref=e252]: Curr
+            - link "Compare" [ref=e253] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Trea Turner
+            - link "Upgrade" [ref=e254] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=SS
+        - generic [ref=e255]:
+          - generic [ref=e256]:
+            - generic [ref=e257]:
+              - link "Zach Neto" [ref=e259] [cursor=pointer]:
+                - /url: /player?name=Zach Neto
+              - generic [ref=e260]: "LAA · #6 SS · #6 MI · 80 pts"
+            - generic [ref=e261]:
+              - generic [ref=e262]:
+                - generic [ref=e263]: "23"
+                - generic [ref=e264]: HR
+              - generic [ref=e265]:
+                - generic [ref=e266]: "78"
+                - generic [ref=e267]: R
+              - generic [ref=e268]:
+                - generic [ref=e269]: "63"
+                - generic [ref=e270]: RBI
+              - generic [ref=e271]:
+                - generic [ref=e272]: "23"
+                - generic [ref=e273]: SB
+              - generic [ref=e274]:
+                - generic [ref=e275]: "0.245"
+                - generic [ref=e276]: AVG
+          - generic [ref=e277]:
+            - generic [ref=e278]:
+              - generic [ref=e279]: "1.96"
+              - generic [ref=e280]: Proj
+            - generic [ref=e281]:
+              - generic [ref=e282]: "2.43"
+              - generic [ref=e283]: Curr
+            - link "Compare" [ref=e284] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Zach Neto
+            - link "Upgrade" [ref=e285] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=SS
+        - generic [ref=e286]:
+          - generic [ref=e287]:
+            - generic [ref=e288]:
+              - link "Pete Alonso" [ref=e290] [cursor=pointer]:
+                - /url: /player?name=Pete Alonso
+              - generic [ref=e291]: "Bal · #3 1B · #5 CI · 56 pts"
+            - generic [ref=e292]:
+              - generic [ref=e293]:
+                - generic [ref=e294]: "29"
+                - generic [ref=e295]: HR
+              - generic [ref=e296]:
+                - generic [ref=e297]: "76"
+                - generic [ref=e298]: R
+              - generic [ref=e299]:
+                - generic [ref=e300]: "85"
+                - generic [ref=e301]: RBI
+              - generic [ref=e302]:
+                - generic [ref=e303]: "3"
+                - generic [ref=e304]: SB
+              - generic [ref=e305]:
+                - generic [ref=e306]: "0.246"
+                - generic [ref=e307]: AVG
+          - generic [ref=e308]:
+            - generic [ref=e309]:
+              - generic [ref=e310]: "1.90"
+              - generic [ref=e311]: Proj
+            - generic [ref=e312]:
+              - generic [ref=e313]: "2.00"
+              - generic [ref=e314]: Curr
+            - link "Compare" [ref=e315] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Pete Alonso
+            - link "Upgrade" [ref=e316] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=1B
+        - generic [ref=e317]:
+          - generic [ref=e318]:
+            - generic [ref=e319]:
+              - link "Pete Crow-Armstrong" [ref=e321] [cursor=pointer]:
+                - /url: /player?name=Pete Crow-Armstrong
+              - generic [ref=e322]: "ChC · #10 OF · 44 pts"
+            - generic [ref=e323]:
+              - generic [ref=e324]:
+                - generic [ref=e325]: "19"
+                - generic [ref=e326]: HR
+              - generic [ref=e327]:
+                - generic [ref=e328]: "62"
+                - generic [ref=e329]: R
+              - generic [ref=e330]:
+                - generic [ref=e331]: "67"
+                - generic [ref=e332]: RBI
+              - generic [ref=e333]:
+                - generic [ref=e334]: "28"
+                - generic [ref=e335]: SB
+              - generic [ref=e336]:
+                - generic [ref=e337]: "0.247"
+                - generic [ref=e338]: AVG
+          - generic [ref=e339]:
+            - generic [ref=e340]:
+              - generic [ref=e341]: "1.88"
+              - generic [ref=e342]: Proj
+            - generic [ref=e343]:
+              - generic [ref=e344]: "1.44"
+              - generic [ref=e345]: Curr
+            - link "Compare" [ref=e346] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Pete Crow-Armstrong
+            - link "Upgrade" [ref=e347] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=OF
+        - generic [ref=e348]:
+          - generic [ref=e349]:
+            - generic [ref=e350]:
+              - link "Austin Riley" [ref=e352] [cursor=pointer]:
+                - /url: /player?name=Austin Riley
+              - generic [ref=e353]: "Atl · #6 3B · #11 CI · 72 pts"
+            - generic [ref=e354]:
+              - generic [ref=e355]:
+                - generic [ref=e356]: "23"
+                - generic [ref=e357]: HR
+              - generic [ref=e358]:
+                - generic [ref=e359]: "70"
+                - generic [ref=e360]: R
+              - generic [ref=e361]:
+                - generic [ref=e362]: "78"
+                - generic [ref=e363]: RBI
+              - generic [ref=e364]:
+                - generic [ref=e365]: "4"
+                - generic [ref=e366]: SB
+              - generic [ref=e367]:
+                - generic [ref=e368]: "0.256"
+                - generic [ref=e369]: AVG
+          - generic [ref=e370]:
+            - generic [ref=e371]:
+              - generic [ref=e372]: "1.73"
+              - generic [ref=e373]: Proj
+            - generic [ref=e374]:
+              - generic [ref=e375]: "2.22"
+              - generic [ref=e376]: Curr
+            - link "Compare" [ref=e377] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Austin Riley
+            - link "Upgrade" [ref=e378] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=3B
+        - generic [ref=e379]:
+          - generic [ref=e380]:
+            - generic [ref=e381]:
+              - link "Jakob Marsee" [ref=e383] [cursor=pointer]:
+                - /url: /player?name=Jakob Marsee
+              - generic [ref=e384]: "Mia · #18 OF · 61 pts"
+            - generic [ref=e385]:
+              - generic [ref=e386]:
+                - generic [ref=e387]: "10"
+                - generic [ref=e388]: HR
+              - generic [ref=e389]:
+                - generic [ref=e390]: "64"
+                - generic [ref=e391]: R
+              - generic [ref=e392]:
+                - generic [ref=e393]: "42"
+                - generic [ref=e394]: RBI
+              - generic [ref=e395]:
+                - generic [ref=e396]: "33"
+                - generic [ref=e397]: SB
+              - generic [ref=e398]:
+                - generic [ref=e399]: "0.224"
+                - generic [ref=e400]: AVG
+          - generic [ref=e401]:
+            - generic [ref=e402]:
+              - generic [ref=e403]: "1.68"
+              - generic [ref=e404]: Proj
+            - generic [ref=e405]:
+              - generic [ref=e406]: "1.74"
+              - generic [ref=e407]: Curr
+            - link "Compare" [ref=e408] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Jakob Marsee
+            - link "Upgrade" [ref=e409] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=OF
+        - generic [ref=e410]:
+          - generic [ref=e411]:
+            - generic [ref=e412]:
+              - link "Salvador Perez" [ref=e414] [cursor=pointer]:
+                - /url: /player?name=Salvador Perez
+              - generic [ref=e415]: "KC · #21 DH · #5 C · #16 1B · #27 CI · 36 pts"
+            - generic [ref=e416]:
+              - generic [ref=e417]:
+                - generic [ref=e418]: "23"
+                - generic [ref=e419]: HR
+              - generic [ref=e420]:
+                - generic [ref=e421]: "61"
+                - generic [ref=e422]: R
+              - generic [ref=e423]:
+                - generic [ref=e424]: "74"
+                - generic [ref=e425]: RBI
+              - generic [ref=e426]:
+                - generic [ref=e427]: "0"
+                - generic [ref=e428]: SB
+              - generic [ref=e429]:
+                - generic [ref=e430]: "0.247"
+                - generic [ref=e431]: AVG
+          - generic [ref=e432]:
+            - generic [ref=e433]:
+              - generic [ref=e434]: "1.57"
+              - generic [ref=e435]: Proj
+            - generic [ref=e436]:
+              - generic [ref=e437]: "1.55"
+              - generic [ref=e438]: Curr
+            - link "Compare" [ref=e439] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Salvador Perez
+            - link "Upgrade" [ref=e440] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=1B
+        - generic [ref=e441]:
+          - generic [ref=e442]:
+            - generic [ref=e443]:
+              - link "Andres Gimenez" [ref=e445] [cursor=pointer]:
+                - /url: /player?name=Andres Gimenez
+              - generic [ref=e446]: "Tor · #16 SS · #10 2B · #24 MI · 67 pts"
+            - generic [ref=e447]:
+              - generic [ref=e448]:
+                - generic [ref=e449]: "12"
+                - generic [ref=e450]: HR
+              - generic [ref=e451]:
+                - generic [ref=e452]: "55"
+                - generic [ref=e453]: R
+              - generic [ref=e454]:
+                - generic [ref=e455]: "53"
+                - generic [ref=e456]: RBI
+              - generic [ref=e457]:
+                - generic [ref=e458]: "17"
+                - generic [ref=e459]: SB
+              - generic [ref=e460]:
+                - generic [ref=e461]: "0.253"
+                - generic [ref=e462]: AVG
+          - generic [ref=e463]:
+            - generic [ref=e464]:
+              - generic [ref=e465]: "1.56"
+              - generic [ref=e466]: Proj
+            - generic [ref=e467]:
+              - generic [ref=e468]: "2.38"
+              - generic [ref=e469]: Curr
+            - link "Compare" [ref=e470] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Andres Gimenez
+            - link "Upgrade" [ref=e471] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=2B
+        - generic [ref=e472]:
+          - generic [ref=e473]:
+            - generic [ref=e474]:
+              - link "Gavin Williams" [ref=e476] [cursor=pointer]:
+                - /url: /player?name=Gavin Williams
+              - generic [ref=e477]: "Cle · #37 P · 118 pts"
+            - generic [ref=e478]:
+              - generic [ref=e479]:
+                - generic [ref=e480]: "3.94"
+                - generic [ref=e481]: ERA
+              - generic [ref=e482]:
+                - generic [ref=e483]: "-0"
+                - generic [ref=e484]: SV
+              - generic [ref=e485]:
+                - generic [ref=e486]: "4"
+                - generic [ref=e487]: IP
+              - generic [ref=e488]:
+                - generic [ref=e489]: 111.0%
+                - generic [ref=e490]: K-BB%
+          - generic [ref=e491]:
+            - generic [ref=e492]:
+              - generic [ref=e493]: "1.32"
+              - generic [ref=e494]: Proj
+            - generic [ref=e495]:
+              - generic [ref=e496]: "1.58"
+              - generic [ref=e497]: Curr
+            - link "Compare" [ref=e498] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Gavin Williams
+            - link "Upgrade" [ref=e499] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=Pitcher
+        - generic [ref=e500]:
+          - generic [ref=e501]:
+            - generic [ref=e502]:
+              - link "Yusei Kikuchi" [ref=e504] [cursor=pointer]:
+                - /url: /player?name=Yusei Kikuchi
+              - generic [ref=e505]: "LAA · #40 P · 55 pts"
+            - generic [ref=e506]:
+              - generic [ref=e507]:
+                - generic [ref=e508]: "4.05"
+                - generic [ref=e509]: ERA
+              - generic [ref=e510]:
+                - generic [ref=e511]: "-0"
+                - generic [ref=e512]: SV
+              - generic [ref=e513]:
+                - generic [ref=e514]: "3"
+                - generic [ref=e515]: IP
+              - generic [ref=e516]:
+                - generic [ref=e517]: 133.0%
+                - generic [ref=e518]: K-BB%
+          - generic [ref=e519]:
+            - generic [ref=e520]:
+              - generic [ref=e521]: "1.30"
+              - generic [ref=e522]: Proj
+            - generic [ref=e523]:
+              - generic [ref=e524]: "1.11"
+              - generic [ref=e525]: Curr
+            - link "Compare" [ref=e526] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Yusei Kikuchi
+            - link "Upgrade" [ref=e527] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=Pitcher
+        - generic [ref=e528]:
+          - generic [ref=e529]:
+            - generic [ref=e530]:
+              - link "Mitch Keller" [ref=e532] [cursor=pointer]:
+                - /url: /player?name=Mitch Keller
+              - generic [ref=e533]: "Pit · #45 P · 76 pts"
+            - generic [ref=e534]:
+              - generic [ref=e535]:
+                - generic [ref=e536]: "4.39"
+                - generic [ref=e537]: ERA
+              - generic [ref=e538]:
+                - generic [ref=e539]: "-0"
+                - generic [ref=e540]: SV
+              - generic [ref=e541]:
+                - generic [ref=e542]: "4"
+                - generic [ref=e543]: IP
+              - generic [ref=e544]:
+                - generic [ref=e545]: 81.0%
+                - generic [ref=e546]: K-BB%
+          - generic [ref=e547]:
+            - generic [ref=e548]:
+              - generic [ref=e549]: "1.28"
+              - generic [ref=e550]: Proj
+            - generic [ref=e551]:
+              - generic [ref=e552]: "0.91"
+              - generic [ref=e553]: Curr
+            - link "Compare" [ref=e554] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Mitch Keller
+            - link "Upgrade" [ref=e555] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=Pitcher
+        - generic [ref=e556]:
+          - generic [ref=e557]:
+            - generic [ref=e558]:
+              - link "Pete Fairbanks" [ref=e560] [cursor=pointer]:
+                - /url: /player?name=Pete Fairbanks
+              - generic [ref=e561]: "Mia · #47 P · 22 pts"
+            - generic [ref=e562]:
+              - generic [ref=e563]:
+                - generic [ref=e564]: "3.56"
+                - generic [ref=e565]: ERA
+              - generic [ref=e566]:
+                - generic [ref=e567]: "9"
+                - generic [ref=e568]: SV
+              - generic [ref=e569]:
+                - generic [ref=e570]: 156.0%
+                - generic [ref=e571]: K-BB%
+          - generic [ref=e572]:
+            - generic [ref=e573]:
+              - generic [ref=e574]: "1.27"
+              - generic [ref=e575]: Proj
+            - generic [ref=e576]:
+              - generic [ref=e577]: "0.49"
+              - generic [ref=e578]: Curr
+            - link "Compare" [ref=e579] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Pete Fairbanks
+            - link "Upgrade" [ref=e580] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=Pitcher
+        - generic [ref=e581]:
+          - generic [ref=e582]:
+            - generic [ref=e583]:
+              - link "Shane McClanahan" [ref=e585] [cursor=pointer]:
+                - /url: /player?name=Shane McClanahan
+              - generic [ref=e586]: "TB · #49 P · 44 pts"
+            - generic [ref=e587]:
+              - generic [ref=e588]:
+                - generic [ref=e589]: "3.44"
+                - generic [ref=e590]: ERA
+              - generic [ref=e591]:
+                - generic [ref=e592]: "-0"
+                - generic [ref=e593]: SV
+              - generic [ref=e594]:
+                - generic [ref=e595]: "3"
+                - generic [ref=e596]: IP
+              - generic [ref=e597]:
+                - generic [ref=e598]: 180.0%
+                - generic [ref=e599]: K-BB%
+          - generic [ref=e600]:
+            - generic [ref=e601]:
+              - generic [ref=e602]: "1.26"
+              - generic [ref=e603]: Proj
+            - generic [ref=e604]:
+              - generic [ref=e605]: "0.20"
+              - generic [ref=e606]: Curr
+            - link "Compare" [ref=e607] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Shane McClanahan
+            - link "Upgrade" [ref=e608] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=Pitcher
+        - generic [ref=e609]:
+          - generic [ref=e610]:
+            - generic [ref=e611]:
+              - link "Ryan Walker" [ref=e613] [cursor=pointer]:
+                - /url: /player?name=Ryan Walker
+              - generic [ref=e614]: "SF · #64 P · 38 pts"
+            - generic [ref=e615]:
+              - generic [ref=e616]:
+                - generic [ref=e617]: "3.31"
+                - generic [ref=e618]: ERA
+              - generic [ref=e619]:
+                - generic [ref=e620]: "7"
+                - generic [ref=e621]: SV
+              - generic [ref=e622]:
+                - generic [ref=e623]: 169.0%
+                - generic [ref=e624]: K-BB%
+          - generic [ref=e625]:
+            - generic [ref=e626]:
+              - generic [ref=e627]: "1.14"
+              - generic [ref=e628]: Proj
+            - generic [ref=e629]:
+              - generic [ref=e630]: "0.27"
+              - generic [ref=e631]: Curr
+            - link "Compare" [ref=e632] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Ryan Walker
+            - link "Upgrade" [ref=e633] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=Pitcher
+        - generic [ref=e634]:
+          - generic [ref=e635]:
+            - generic [ref=e636]:
+              - link "Chris Bassitt" [ref=e638] [cursor=pointer]:
+                - /url: /player?name=Chris Bassitt
+              - generic [ref=e639]: "Bal · #71 P · 12 pts"
+            - generic [ref=e640]:
+              - generic [ref=e641]:
+                - generic [ref=e642]: "4.45"
+                - generic [ref=e643]: ERA
+              - generic [ref=e644]:
+                - generic [ref=e645]: "-0"
+                - generic [ref=e646]: SV
+              - generic [ref=e647]:
+                - generic [ref=e648]: "3"
+                - generic [ref=e649]: IP
+              - generic [ref=e650]:
+                - generic [ref=e651]: 67.0%
+                - generic [ref=e652]: K-BB%
+          - generic [ref=e653]:
+            - generic [ref=e654]:
+              - generic [ref=e655]: "1.11"
+              - generic [ref=e656]: Proj
+            - generic [ref=e657]:
+              - generic [ref=e658]: "0.08"
+              - generic [ref=e659]: Curr
+            - link "Compare" [ref=e660] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Chris Bassitt
+            - link "Upgrade" [ref=e661] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=Pitcher
+        - generic [ref=e662]:
+          - generic [ref=e663]:
+            - generic [ref=e664]:
+              - link "Matthew Liberatore" [ref=e666] [cursor=pointer]:
+                - /url: /player?name=Matthew Liberatore
+              - generic [ref=e667]: "StL · #89 P · 46 pts"
+            - generic [ref=e668]:
+              - generic [ref=e669]:
+                - generic [ref=e670]: "4.42"
+                - generic [ref=e671]: ERA
+              - generic [ref=e672]:
+                - generic [ref=e673]: "-0"
+                - generic [ref=e674]: SV
+              - generic [ref=e675]:
+                - generic [ref=e676]: "3"
+                - generic [ref=e677]: IP
+              - generic [ref=e678]:
+                - generic [ref=e679]: 49.0%
+                - generic [ref=e680]: K-BB%
+          - generic [ref=e681]:
+            - generic [ref=e682]:
+              - generic [ref=e683]: "1.01"
+              - generic [ref=e684]: Proj
+            - generic [ref=e685]:
+              - generic [ref=e686]: "0.50"
+              - generic [ref=e687]: Curr
+            - link "Compare" [ref=e688] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Matthew Liberatore
+            - link "Upgrade" [ref=e689] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=Pitcher
+        - generic [ref=e690]:
+          - generic [ref=e691]:
+            - generic [ref=e692]:
+              - link "Davis Martin" [ref=e694] [cursor=pointer]:
+                - /url: /player?name=Davis Martin
+              - generic [ref=e695]: "ChW · #106 P · 92 pts"
+            - generic [ref=e696]:
+              - generic [ref=e697]:
+                - generic [ref=e698]: "4.53"
+                - generic [ref=e699]: ERA
+              - generic [ref=e700]:
+                - generic [ref=e701]: "-0"
+                - generic [ref=e702]: SV
+              - generic [ref=e703]:
+                - generic [ref=e704]: "3"
+                - generic [ref=e705]: IP
+              - generic [ref=e706]:
+                - generic [ref=e707]: 44.0%
+                - generic [ref=e708]: K-BB%
+          - generic [ref=e709]:
+            - generic [ref=e710]:
+              - generic [ref=e711]: "0.94"
+              - generic [ref=e712]: Proj
+            - generic [ref=e713]:
+              - generic [ref=e714]: "1.27"
+              - generic [ref=e715]: Curr
+            - link "Compare" [ref=e716] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Davis Martin
+            - link "Upgrade" [ref=e717] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=Pitcher
+        - generic [ref=e718]:
+          - generic [ref=e719]:
+            - generic [ref=e720]:
+              - link "Grant Taylor" [ref=e722] [cursor=pointer]:
+                - /url: /player?name=Grant Taylor
+              - generic [ref=e723]: "ChW · #106 P · 38 pts"
+            - generic [ref=e724]:
+              - generic [ref=e725]:
+                - generic [ref=e726]: "3.20"
+                - generic [ref=e727]: ERA
+              - generic [ref=e728]:
+                - generic [ref=e729]: "1"
+                - generic [ref=e730]: SV
+              - generic [ref=e731]:
+                - generic [ref=e732]: "2"
+                - generic [ref=e733]: IP
+              - generic [ref=e734]:
+                - generic [ref=e735]: 197.0%
+                - generic [ref=e736]: K-BB%
+          - generic [ref=e737]:
+            - generic [ref=e738]:
+              - generic [ref=e739]: "0.94"
+              - generic [ref=e740]: Proj
+            - generic [ref=e741]:
+              - generic [ref=e742]: "0.64"
+              - generic [ref=e743]: Curr
+            - link "Compare" [ref=e744] [cursor=pointer]:
+              - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Grant Taylor
+            - link "Upgrade" [ref=e745] [cursor=pointer]:
+              - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=Pitcher

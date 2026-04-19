@@ -1,0 +1,154 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - img [ref=e5]
+      - generic [ref=e8]: Fantasy Hub
+    - navigation [ref=e9]:
+      - link "Dashboard" [ref=e10] [cursor=pointer]:
+        - /url: /?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e11]
+        - text: Dashboard
+      - link "Add / Drop" [ref=e16] [cursor=pointer]:
+        - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e17]
+        - text: Add / Drop
+      - link "My Team" [ref=e20] [cursor=pointer]:
+        - /url: /team?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e21]
+        - text: My Team
+      - link "All Players" [ref=e26] [cursor=pointer]:
+        - /url: /players?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e27]
+        - text: All Players
+      - link "Compare" [ref=e28] [cursor=pointer]:
+        - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e29]
+        - text: Compare
+      - link "Draft" [ref=e31] [cursor=pointer]:
+        - /url: /draft?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e32]
+        - text: Draft
+      - link "League" [ref=e35] [cursor=pointer]:
+        - /url: /league?team=Land of 10,000 Rakes&hideInjured=true
+        - img [ref=e36]
+        - text: League
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - generic [ref=e40]: Team
+        - combobox [ref=e41]:
+          - option "Caleb's Competitive Team"
+          - option "Land of 10,000 Rakes" [selected]
+          - option "Los twinkies"
+          - option "Mark's Magnificent Team"
+          - option "Mike's team"
+          - option "RIP Griffin Jax (ass)"
+          - option "Roger's Rowdy Team"
+          - option "Team Isaac LLC"
+          - option "Travis's Talented Team"
+          - option "josh's Scary Team"
+      - generic [ref=e42]:
+        - generic [ref=e43]: Projections
+        - combobox [ref=e44]:
+          - option "Steamer" [selected]
+          - option "ZiPS"
+          - option "THE BAT"
+          - option "THE BAT X"
+          - option "ATC"
+          - option "Depth Charts"
+      - generic [ref=e45] [cursor=pointer]:
+        - checkbox "Hide injured" [checked] [ref=e46]
+        - text: Hide injured
+    - generic [ref=e47]:
+      - generic [ref=e48]: free_agents_ranked_20260419_131534.csv
+      - button "Refresh Data" [ref=e49] [cursor=pointer]:
+        - img [ref=e50]
+        - text: Refresh Data
+  - main [ref=e53]:
+    - generic [ref=e54]:
+      - generic [ref=e55]: Dashboard
+      - generic [ref=e56]: Land of 10,000 Rakes
+    - generic [ref=e58]:
+      - generic [ref=e59]:
+        - img [ref=e60]
+        - generic [ref=e62]:
+          - text: 2 injured players on your roster —
+          - link "Raisel Iglesias (DAY_TO_DAY)" [ref=e63] [cursor=pointer]:
+            - /url: /player?name=Raisel Iglesias (DAY_TO_DAY)
+          - text: ","
+          - link "Nick Pivetta (FIFTEEN_DAY_DL)" [ref=e64] [cursor=pointer]:
+            - /url: /player?name=Nick Pivetta (FIFTEEN_DAY_DL)
+      - generic [ref=e65]: Available moves
+      - generic [ref=e66]:
+        - link "P Add Jeff Hoffman Tor Drop Nick Pivetta (FIFTEEN_DAY_DL) +0.72" [ref=e67] [cursor=pointer]:
+          - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Jeff Hoffman&p2=Nick Pivetta (FIFTEEN_DAY_DL)
+          - generic [ref=e68]: P
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - generic [ref=e71]: Add
+              - generic [ref=e72]: Jeff Hoffman
+              - generic [ref=e73]: Tor
+            - generic [ref=e74]:
+              - generic [ref=e75]: Drop
+              - generic [ref=e76]: Nick Pivetta (FIFTEEN_DAY_DL)
+          - generic [ref=e77]: "+0.72"
+        - link "1B Add Jake Burger Tex Drop Salvador Perez +0.09" [ref=e78] [cursor=pointer]:
+          - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Jake Burger&p2=Salvador Perez
+          - generic [ref=e79]: 1B
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - generic [ref=e82]: Add
+              - generic [ref=e83]: Jake Burger
+              - generic [ref=e84]: Tex
+            - generic [ref=e85]:
+              - generic [ref=e86]: Drop
+              - generic [ref=e87]: Salvador Perez
+          - generic [ref=e88]: "+0.09"
+        - link "CI Add Jake Burger Tex Drop Salvador Perez +0.09" [ref=e89] [cursor=pointer]:
+          - /url: /compare?team=Land of 10,000 Rakes&hideInjured=true&p1=Jake Burger&p2=Salvador Perez
+          - generic [ref=e90]: CI
+          - generic [ref=e91]:
+            - generic [ref=e92]:
+              - generic [ref=e93]: Add
+              - generic [ref=e94]: Jake Burger
+              - generic [ref=e95]: Tex
+            - generic [ref=e96]:
+              - generic [ref=e97]: Drop
+              - generic [ref=e98]: Salvador Perez
+          - generic [ref=e99]: "+0.09"
+      - generic [ref=e100]: Position health
+      - generic [ref=e101]:
+        - link "C" [ref=e102] [cursor=pointer]:
+          - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=C
+          - generic [ref=e103]: C
+        - link "1B" [ref=e105] [cursor=pointer]:
+          - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=1B
+          - generic [ref=e106]: 1B
+        - link "2B" [ref=e108] [cursor=pointer]:
+          - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=2B
+          - generic [ref=e109]: 2B
+        - link "3B" [ref=e111] [cursor=pointer]:
+          - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=3B
+          - generic [ref=e112]: 3B
+        - link "SS" [ref=e114] [cursor=pointer]:
+          - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=SS
+          - generic [ref=e115]: SS
+        - link "OF" [ref=e117] [cursor=pointer]:
+          - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=OF
+          - generic [ref=e118]: OF
+        - link "DH" [ref=e120] [cursor=pointer]:
+          - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=DH
+          - generic [ref=e121]: DH
+        - link "P" [ref=e123] [cursor=pointer]:
+          - /url: /add-drop?team=Land of 10,000 Rakes&hideInjured=true&pos=P
+          - generic [ref=e124]: P
+      - generic [ref=e126]:
+        - generic [ref=e127]: Strong
+        - generic [ref=e128]: Good
+        - generic [ref=e129]: Average
+        - generic [ref=e130]: Weak
+      - generic [ref=e131]:
+        - text: Ranked
+        - strong [ref=e132]: "1"
+        - text: of 10 teams
+        - link "View standings →" [ref=e133] [cursor=pointer]:
+          - /url: /league?team=Land of 10,000 Rakes&hideInjured=true

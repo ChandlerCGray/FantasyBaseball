@@ -102,8 +102,9 @@ def fetch_data():
     logger.info("Fetching scoring settings from ESPN...")
     get_scoring_settings(league_id, season, espn_s2, swid, OUTPUT_DIR)
     
-    logger.info("Fetching FanGraphs projections and stats...")
-    bat_df, pit_df = get_fangraphs_merged_data()
+    model = os.getenv("PROJECTION_MODEL", "steamer")
+    logger.info(f"Fetching FanGraphs projections and stats (model: {model})...")
+    bat_df, pit_df = get_fangraphs_merged_data(model=model)
     if bat_df.empty and pit_df.empty:
         logger.error("FanGraphs returned empty data.")
         return None, None, None

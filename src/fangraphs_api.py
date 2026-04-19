@@ -41,18 +41,30 @@ def preprocess_fangraphs(df, mapping, prefix, position_value=None):
 
     return df
 
-def get_fangraphs_merged_data():
+PROJECTION_MODELS = {
+    "steamer":     {"label": "Steamer",       "ros": "steamerr",       "full": "steamer"},
+    "zips":        {"label": "ZiPS",          "ros": "zipss",          "full": "zips"},
+    "thebat":      {"label": "THE BAT",       "ros": "thebats",        "full": "thebat"},
+    "atc":         {"label": "ATC",           "ros": "atc",            "full": "atc"},
+    "fangraphsdc": {"label": "Depth Charts",  "ros": "fangraphsdcros", "full": "fangraphsdc"},
+}
+
+def get_fangraphs_merged_data(model: str = "steamer"):
     import os
     from datetime import datetime
 
     season = os.getenv("SEASON", str(datetime.now().year))
 
+    cfg = PROJECTION_MODELS.get(model, PROJECTION_MODELS["steamer"])
+    ros_type, full_type = cfg["ros"], cfg["full"]
+
     # Try rest-of-season first; fall back to full-season preseason projections
-    proj_type = "steamerr"
-    test = fetch_json_df(f"https://www.fangraphs.com/api/projections?type=steamerr&stats=bat&pos=all&team=0&players=0&lg=all")
+    test = fetch_json_df(f"https://www.fangraphs.com/api/projections?type={ros_type}&stats=bat&pos=all&team=0&players=0&lg=all")
     if test.empty:
-        proj_type = "steamer"
-        print(f"INFO: steamerr empty — using preseason steamer projections")
+        proj_type = full_type
+        print(f"INFO: {ros_type} empty — using preseason {full_type} projections")
+    else:
+        proj_type = ros_type
 
     urls = {
         "proj_bat": f"https://www.fangraphs.com/api/projections?type={proj_type}&stats=bat&pos=all&team=0&players=0&lg=all",

@@ -27,6 +27,14 @@
           <label class="checkbox"><input type="checkbox" id="hideInjured" {% if hide_injured %}checked{% endif %}/> Hide Injured</label>
         </div>
         <div class="section">
+          <div class="label">Projections</div>
+          <select id="projModelSelect">
+            {% for key, label in PROJECTION_MODELS %}
+            <option value="{{ key }}" {% if get_projection_model()==key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="section">
           <button id="updateBtn" class="primary">Update Data</button>
         </div>
       </aside>
@@ -570,7 +578,9 @@
       document.getElementById('updateBtn')?.addEventListener('click', async () => {
         const btn = document.getElementById('updateBtn');
         btn.disabled = true; btn.textContent = 'Updating...';
-        try { await fetch('/update', { method: 'POST' }); location.reload(); } catch (e) {}
+        const model = document.getElementById('projModelSelect')?.value || '';
+        const url = model ? `/update?model=${encodeURIComponent(model)}` : '/update';
+        try { await fetch(url, { method: 'POST' }); location.reload(); } catch (e) {}
       });
 
       // Mobile sidebar toggle

@@ -13,7 +13,7 @@ def update_env_file(swid, espn_s2):
         with open('.env', 'r') as f:
             content = f.read()
     else:
-        print("❌ .env file not found!")
+        print(".env file not found!")
         return False
     
     # Update SWID
@@ -26,7 +26,7 @@ def update_env_file(swid, espn_s2):
     with open('.env', 'w') as f:
         f.write(content)
     
-    print("✅ .env file updated successfully!")
+    print(".env file updated successfully!")
     return True
 
 if __name__ == "__main__":
@@ -48,9 +48,9 @@ if __name__ == "__main__":
     if swid and espn_s2:
         if update_env_file(swid, espn_s2):
             print()
-            print("🎉 Credentials updated! You can now:")
+            print("Credentials updated! You can now:")
             print("1. Go to your Fantasy Baseball app")
             print("2. Click 'Update Data' in the sidebar")
             print("3. Your real league data should load!")
     else:
-        print("❌ Please provide both SWID and espn_s2 values") 
+        print("Please provide both SWID and espn_s2 values") 

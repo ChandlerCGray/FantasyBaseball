@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, Query
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -10,6 +10,7 @@ import subprocess, sys, tempfile
 sys.path.insert(0, str((Path(__file__).resolve().parent.parent)))
 from data_utils import expand_positions, format_player_name  # type: ignore
 from draft_strategy_generator import analyze_and_adjust_rankings  # type: ignore
+from fangraphs_api import PROJECTION_MODELS  # type: ignore
 
 BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent.parent
@@ -21,6 +22,10 @@ app = FastAPI(title="Fantasy Baseball Hub")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
+_PROJ_MODEL_LIST = [(k, v["label"]) for k, v in PROJECTION_MODELS.items()]
+templates.env.globals["PROJECTION_MODELS"] = _PROJ_MODEL_LIST
+templates.env.globals["get_projection_model"] = lambda: os.getenv("PROJECTION_MODEL", "steamer")
+
 
 def get_latest_csv() -> str | None:
     out_dir = ROOT_DIR / "output"
@@ -31,7 +36,9 @@ def get_latest_csv() -> str | None:
 
 
 def _filters_from_qp(qp, teams: list[str]):
-    selected_team = qp.get("team", teams[0] if teams else "")
+    default_team = os.getenv("DEFAULT_TEAM", "")
+    fallback = next((t for t in teams if t == default_team), teams[0] if teams else "")
+    selected_team = qp.get("team", fallback)
     hide_inj = qp.get("hideInjured", "true").lower() == "true"
     try:
         min_score = float(qp.get("minScore", "-1.0"))
@@ -453,7 +460,14 @@ def player_search(q: str = ""):
 
 
 @app.post("/update")
-def update_data():
+def update_data(model: str = Query(default=None)):
+    if model and model in PROJECTION_MODELS:
+        try:
+            from dotenv import set_key
+            set_key(str(ROOT_DIR / ".env"), "PROJECTION_MODEL", model)
+        except Exception:
+            pass
+        os.environ["PROJECTION_MODEL"] = model
     try:
         subprocess.run([sys.executable, str(ROOT_DIR / "src" / "main.py")], check=True)
         return JSONResponse({"status": "ok"})

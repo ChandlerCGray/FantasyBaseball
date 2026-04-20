@@ -241,6 +241,17 @@ def rank_free_agents(merged_df):
 
     invert_pitcher = {"FIP", "WHIP"}
 
+    for stat in hitter_weights:
+        for pfx in ("proj_", "curr_"):
+            col = pfx + stat
+            if col in hitters.columns:
+                hitters[f"raw_{col}"] = hitters[col]
+    for stat in pitcher_weights:
+        for pfx in ("proj_", "curr_"):
+            col = pfx + stat
+            if col in pitchers.columns:
+                pitchers[f"raw_{col}"] = pitchers[col]
+
     hitters = normalize_stats(hitters, list(hitter_weights), "proj_")
     pitchers = normalize_stats(pitchers, list(pitcher_weights), "proj_", invert_metrics=invert_pitcher)
     

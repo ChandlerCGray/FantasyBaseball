@@ -96,7 +96,11 @@ def _compute_upgrades(df: pd.DataFrame, team: str, hide_injured: bool, min_score
                 continue
             key = (fa_pos, str(drop.get("display_name")))
             existing_idx = next((i for i, u in enumerate(upgrades) if (u["pos"], u["drop"]["display_name"]) == key), None)
-            item = {"pos": fa_pos, "add": fa.to_dict(), "drop": drop.to_dict(), "gain": round(gain, 2)}
+            add_d = fa.to_dict()
+            drop_d = drop.to_dict()
+            add_d["clean_name"] = re.sub(r"\s*\(.*?\)\s*$", "", str(add_d.get("display_name", add_d.get("Name", "")))).strip()
+            drop_d["clean_name"] = re.sub(r"\s*\(.*?\)\s*$", "", str(drop_d.get("display_name", drop_d.get("Name", "")))).strip()
+            item = {"pos": fa_pos, "add": add_d, "drop": drop_d, "gain": round(gain, 2)}
             if existing_idx is not None:
                 if upgrades[existing_idx]["gain"] < gain:
                     upgrades[existing_idx] = item
@@ -145,6 +149,10 @@ _FA_COLS = [
     "proj_CompositeScore", "curr_CompositeScore",
     "proj_HR", "proj_R", "proj_RBI", "proj_SB", "proj_AVG",
     "proj_ERA", "proj_WHIP", "proj_SV", "proj_IP", "proj_K-BB%",
+    "raw_proj_wOBA", "raw_proj_ISO", "raw_proj_wRC+", "raw_proj_AB", "raw_proj_wBsR",
+    "raw_proj_FIP", "raw_proj_WHIP", "raw_proj_IP", "raw_proj_K-BB%", "raw_proj_SV",
+    "raw_curr_wOBA", "raw_curr_ISO", "raw_curr_wRC+", "raw_curr_AB", "raw_curr_wBsR",
+    "raw_curr_FIP", "raw_curr_WHIP", "raw_curr_IP", "raw_curr_K-BB%", "raw_curr_SV",
 ]
 
 def _free_agents(df: pd.DataFrame, hide_injured: bool, min_score: float, pos: str = "", limit: int = 100):
@@ -158,7 +166,10 @@ def _free_agents(df: pd.DataFrame, hide_injured: bool, min_score: float, pos: st
         fa_df = fa_df[fa_df["norm_positions"].apply(lambda xs: isinstance(xs, list) and pos in xs)]
     cols = [c for c in _FA_COLS + ["pos_ranks_str", "best_pos_rank"] if c in fa_df.columns]
     fa_df = fa_df.sort_values("proj_CompositeScore", ascending=False)
-    return fa_df[cols].head(limit).to_dict(orient="records")
+    result = fa_df[cols].head(limit).to_dict(orient="records")
+    for r in result:
+        r["clean_name"] = re.sub(r"\s*\(.*?\)\s*$", "", str(r.get("display_name", ""))).strip()
+    return result
 
 
 _ROSTER_COLS = [
@@ -166,6 +177,10 @@ _ROSTER_COLS = [
     "proj_CompositeScore", "curr_CompositeScore", "ScoreDelta",
     "proj_HR", "proj_R", "proj_RBI", "proj_SB", "proj_AVG",
     "proj_ERA", "proj_WHIP", "proj_SV", "proj_IP", "proj_K-BB%",
+    "raw_proj_wOBA", "raw_proj_ISO", "raw_proj_wRC+", "raw_proj_AB", "raw_proj_wBsR",
+    "raw_proj_FIP", "raw_proj_WHIP", "raw_proj_IP", "raw_proj_K-BB%", "raw_proj_SV",
+    "raw_curr_wOBA", "raw_curr_ISO", "raw_curr_wRC+", "raw_curr_AB", "raw_curr_wBsR",
+    "raw_curr_FIP", "raw_curr_WHIP", "raw_curr_IP", "raw_curr_K-BB%", "raw_curr_SV",
 ]
 
 def _team_roster(df: pd.DataFrame, team: str, hide_injured: bool, pos: str = ""):
@@ -176,7 +191,10 @@ def _team_roster(df: pd.DataFrame, team: str, hide_injured: bool, pos: str = "")
         team_df = team_df[team_df["norm_positions"].apply(lambda xs: isinstance(xs, list) and pos in xs)]
     team_df = _attach_pos_ranks(team_df, df)
     cols = [c for c in _ROSTER_COLS + ["pos_ranks_str", "best_pos_rank"] if c in team_df.columns]
-    return team_df[cols].sort_values("proj_CompositeScore", ascending=False).to_dict(orient="records")
+    result = team_df[cols].sort_values("proj_CompositeScore", ascending=False).to_dict(orient="records")
+    for r in result:
+        r["clean_name"] = re.sub(r"\s*\(.*?\)\s*$", "", str(r.get("display_name", ""))).strip()
+    return result
 
 
 def _drop_candidates(df: pd.DataFrame, team: str, hide_injured: bool, pos: str = "", limit: int = 20):
@@ -249,7 +267,9 @@ def _dashboard_data(df: pd.DataFrame, team: str, hide_injured: bool) -> dict:
 
     # Injured players on this team
     injured_mask = df["display_name"].str.contains(r"\(", na=False)
-    injured_rows = df[(df["fantasy_team"] == team) & injured_mask][["display_name", "position"]].to_dict(orient="records")
+    inj_df = df[(df["fantasy_team"] == team) & injured_mask][["display_name", "position"]].copy()
+    inj_df["clean_name"] = inj_df["display_name"].str.replace(r"\s*\(.*?\)\s*$", "", regex=True).str.strip()
+    injured_rows = inj_df.to_dict(orient="records")
 
     # All top upgrades (up to 5)
     top_upgrades = _compute_upgrades(df, team, hide_injured, -1.0)
@@ -1857,12 +1877,14 @@ def ideal_draft_api(pick: int = 1, teams: int = 10):
 def _player_detail(df: pd.DataFrame, name: str):
     if not name:
         return None
-    m = df[df["display_name"].str.fullmatch(name, case=False, na=False)]
+    clean_col = df["display_name"].str.replace(r"\s*\(.*?\)\s*$", "", regex=True).str.strip()
+    m = df[clean_col.str.fullmatch(name, case=False, na=False)]
     if m.empty:
-        m = df[df["display_name"].str.contains(name, case=False, na=False)]
+        m = df[clean_col.str.contains(name, case=False, na=False)]
     if m.empty:
         return None
     row = m.iloc[0].to_dict()
+    row["display_name"] = re.sub(r"\s*\(.*?\)\s*$", "", str(row.get("display_name", ""))).strip()
     # Build organized sections
     identity = {
         k: row.get(k)
@@ -1934,10 +1956,10 @@ def _player_detail(df: pd.DataFrame, name: str):
     pitchers_df = playable[playable.get("norm_positions", []).apply(lambda xs: isinstance(xs, list) and any("P" in p for p in xs))]
 
     # Qualifiers: prefer current season usage if available
-    if "curr_AB" in hitters_df.columns:
-        hitters_df = hitters_df[pd.to_numeric(hitters_df["curr_AB"], errors="coerce").fillna(0) >= 50]
-    if "curr_IP" in pitchers_df.columns:
-        pitchers_df = pitchers_df[pd.to_numeric(pitchers_df["curr_IP"], errors="coerce").fillna(0) >= 20]
+    if "raw_curr_AB" in hitters_df.columns:
+        hitters_df = hitters_df[pd.to_numeric(hitters_df["raw_curr_AB"], errors="coerce").fillna(0) >= 50]
+    if "raw_curr_IP" in pitchers_df.columns:
+        pitchers_df = pitchers_df[pd.to_numeric(pitchers_df["raw_curr_IP"], errors="coerce").fillna(0) >= 20]
 
     def fill_pct(label: str, curr_col: str | None, proj_col: str | None, invert: bool = False, use_pitchers: bool = False):
         base_df = pitchers_df if use_pitchers else hitters_df
@@ -1951,17 +1973,17 @@ def _player_detail(df: pd.DataFrame, name: str):
             proj_pcts[label] = int(minmax_pct(s, val, invert) * 100)
 
     if is_pitcher:
-        fill_pct("IP", "curr_IP", "proj_IP", invert=False, use_pitchers=True)
-        fill_pct("FIP", "curr_FIP", "proj_FIP", invert=True, use_pitchers=True)
-        fill_pct("WHIP", "curr_WHIP", "proj_WHIP", invert=True, use_pitchers=True)
-        fill_pct("K-BB%", "curr_K-BB%", "proj_K-BB%", invert=False, use_pitchers=True)
-        fill_pct("SV", "curr_SV", "proj_SV", invert=False, use_pitchers=True)
+        fill_pct("IP", "raw_curr_IP", "raw_proj_IP", invert=False, use_pitchers=True)
+        fill_pct("FIP", "raw_curr_FIP", "raw_proj_FIP", invert=True, use_pitchers=True)
+        fill_pct("WHIP", "raw_curr_WHIP", "raw_proj_WHIP", invert=True, use_pitchers=True)
+        fill_pct("K-BB%", "raw_curr_K-BB%", "raw_proj_K-BB%", invert=False, use_pitchers=True)
+        fill_pct("SV", "raw_curr_SV", "raw_proj_SV", invert=False, use_pitchers=True)
     else:
-        fill_pct("AB", "curr_AB", "proj_AB", invert=False, use_pitchers=False)
-        fill_pct("wOBA", "curr_wOBA", "proj_wOBA", invert=False, use_pitchers=False)
-        fill_pct("wRC+", "curr_wRC+", "proj_wRC+", invert=False, use_pitchers=False)
-        fill_pct("ISO", "curr_ISO", "proj_ISO", invert=False, use_pitchers=False)
-        fill_pct("wBsR", "curr_wBsR", "proj_wBsR", invert=False, use_pitchers=False)
+        fill_pct("AB", "raw_curr_AB", "raw_proj_AB", invert=False, use_pitchers=False)
+        fill_pct("wOBA", "raw_curr_wOBA", "raw_proj_wOBA", invert=False, use_pitchers=False)
+        fill_pct("wRC+", "raw_curr_wRC+", "raw_proj_wRC+", invert=False, use_pitchers=False)
+        fill_pct("ISO", "raw_curr_ISO", "raw_proj_ISO", invert=False, use_pitchers=False)
+        fill_pct("wBsR", "raw_curr_wBsR", "raw_proj_wBsR", invert=False, use_pitchers=False)
 
     return {
         "identity": identity,
@@ -1970,14 +1992,14 @@ def _player_detail(df: pd.DataFrame, name: str):
         "is_pitcher": is_pitcher,
         # filtered rows for display-only relevant stats
         "proj_rows": (
-            [("IP", projections.get("IP")), ("FIP", projections.get("FIP")), ("WHIP", projections.get("WHIP")), ("K-BB%", projections.get("K-BB%")), ("SV", projections.get("SV"))]
+            [("IP", row.get("raw_proj_IP")), ("FIP", row.get("raw_proj_FIP")), ("WHIP", row.get("raw_proj_WHIP")), ("K-BB%", row.get("raw_proj_K-BB%")), ("SV", row.get("raw_proj_SV"))]
             if is_pitcher
-            else [("AB", projections.get("AB")), ("wOBA", projections.get("wOBA")), ("wRC+", projections.get("wRC+")), ("ISO", projections.get("ISO")), ("wBsR", projections.get("wBsR"))]
+            else [("AB", row.get("raw_proj_AB")), ("wOBA", row.get("raw_proj_wOBA")), ("wRC+", row.get("raw_proj_wRC+")), ("ISO", row.get("raw_proj_ISO")), ("wBsR", row.get("raw_proj_wBsR"))]
         ),
         "curr_rows": (
-            [("IP", current.get("IP")), ("FIP", current.get("FIP")), ("WHIP", current.get("WHIP")), ("K-BB%", current.get("K-BB%")), ("SV", current.get("SV"))]
+            [("IP", row.get("raw_curr_IP")), ("FIP", row.get("raw_curr_FIP")), ("WHIP", row.get("raw_curr_WHIP")), ("K-BB%", row.get("raw_curr_K-BB%")), ("SV", row.get("raw_curr_SV"))]
             if is_pitcher
-            else [("AB", current.get("AB")), ("wOBA", current.get("wOBA")), ("wRC+", current.get("wRC+")), ("ISO", current.get("ISO")), ("wBsR", current.get("wBsR"))]
+            else [("AB", row.get("raw_curr_AB")), ("wOBA", row.get("raw_curr_wOBA")), ("wRC+", row.get("raw_curr_wRC+")), ("ISO", row.get("raw_curr_ISO")), ("wBsR", row.get("raw_curr_wBsR"))]
         ),
         "proj_pcts": proj_pcts,
         "curr_pcts": curr_pcts,

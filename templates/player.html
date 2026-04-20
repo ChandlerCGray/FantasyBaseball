@@ -28,14 +28,15 @@
             <div class="table">
               <div class="trow thead"><div>Stat</div><div>Value</div><div></div><div></div><div></div></div>
               {% for k,v in player.proj_rows %}
+              {% set pct = player.proj_pcts[k] if player.proj_pcts and k in player.proj_pcts else none %}
+              {% set badge = 'great' if pct is not none and pct >= 75 else 'good' if pct is not none and pct >= 50 else 'avg' if pct is not none and pct >= 35 else 'concern' %}
               <div class="trow">
                 <div>{{ k }}</div>
-                <div>{% if v is number %}{{ '%.3f'|format(v) }}{% else %}{{ v }}{% endif %}</div>
+                <div>{% if v is not none and v == v %}{{ '%.3f'|format(v|float) }}{% else %}—{% endif %}</div>
                 <div></div><div></div>
                 <div>
-                  {% set pct = player.proj_pcts.get(k) if player.proj_pcts else None %}
                   {% if pct is not none %}
-                  <div class="mini" title="Projection"><i style="width: {{ pct }}%"></i></div>
+                  <div class="mini {{ badge }}" title="Projection"><i style="width: {{ pct }}%"></i></div>
                   {% endif %}
                 </div>
               </div>
@@ -46,14 +47,15 @@
             <div class="table">
               <div class="trow thead"><div>Stat</div><div>Value</div><div></div><div></div><div></div></div>
               {% for k,v in player.curr_rows %}
+              {% set pct = player.curr_pcts[k] if player.curr_pcts and k in player.curr_pcts else none %}
+              {% set badge = 'great' if pct is not none and pct >= 75 else 'good' if pct is not none and pct >= 50 else 'avg' if pct is not none and pct >= 35 else 'concern' %}
               <div class="trow">
                 <div>{{ k }}</div>
-                <div>{% if v is number %}{{ '%.3f'|format(v) }}{% else %}{{ v }}{% endif %}</div>
+                <div>{% if v is not none and v == v %}{{ '%.3f'|format(v|float) }}{% else %}—{% endif %}</div>
                 <div></div><div></div>
                 <div>
-                  {% set pct = player.curr_pcts.get(k) if player.curr_pcts else None %}
                   {% if pct is not none %}
-                  <div class="mini" title="Current"><i style="width: {{ pct }}%"></i></div>
+                  <div class="mini {{ badge }}" title="Current"><i style="width: {{ pct }}%"></i></div>
                   {% endif %}
                 </div>
               </div>

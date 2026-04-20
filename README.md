@@ -55,6 +55,20 @@ Get `SWID` and `espn_s2` from browser DevTools → Application → Cookies → e
 
 The sidebar on every page lets you switch teams, toggle injured players, and trigger a live data refresh.
 
+## Run as a System Service
+
+To keep the app running after closing your terminal or editor, install it as a systemd service:
+
+```bash
+# Replace YOUR_USER and /path/to/FantasyBaseball in fantasy-baseball.service, then:
+sudo cp fantasy-baseball.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable fantasy-baseball
+sudo systemctl start fantasy-baseball
+```
+
+View logs: `journalctl -u fantasy-baseball -f`
+
 ## Docs
 
 - [Setup Guide](docs/SETUP.md)

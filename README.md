@@ -60,8 +60,12 @@ The sidebar on every page lets you switch teams, toggle injured players, and tri
 To keep the app running after closing your terminal or editor, install it as a systemd service:
 
 ```bash
-# Replace YOUR_USER and /path/to/FantasyBaseball in fantasy-baseball.service, then:
-sudo cp fantasy-baseball.service /etc/systemd/system/
+# Substitute your username and clone path, then install
+sudo sed \
+  -e 's|YOUR_USER|'$USER'|g' \
+  -e 's|/path/to/FantasyBaseball|'$(pwd)'|g' \
+  fantasy-baseball.service | sudo tee /etc/systemd/system/fantasy-baseball.service
+
 sudo systemctl daemon-reload
 sudo systemctl enable fantasy-baseball
 sudo systemctl start fantasy-baseball

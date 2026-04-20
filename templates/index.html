@@ -271,17 +271,17 @@
                     </div>
                     <div class="fa-card-stats">
                       {% if is_pitcher %}
-                        {% if p.proj_ERA is not none and p.proj_ERA == p.proj_ERA %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_ERA) }}</span><span class="fa-stat-lbl">ERA</span></span>{% endif %}
-                        {% if p.proj_WHIP is not none and p.proj_WHIP == p.proj_WHIP and p.proj_WHIP > 0 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_WHIP) }}</span><span class="fa-stat-lbl">WHIP</span></span>{% endif %}
-                        {% if p.proj_SV is not none and p.proj_SV == p.proj_SV %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SV) }}</span><span class="fa-stat-lbl">SV</span></span>{% endif %}
-                        {% if p.proj_IP is not none and p.proj_IP == p.proj_IP and p.proj_IP > 1 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_IP) }}</span><span class="fa-stat-lbl">IP</span></span>{% endif %}
                         {% if p['proj_K-BB%'] is not none and p['proj_K-BB%'] == p['proj_K-BB%'] %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.1f'|format(p['proj_K-BB%'] * 100) }}%</span><span class="fa-stat-lbl">K-BB%</span></span>{% endif %}
+                        {% if p.proj_FIP is not none and p.proj_FIP == p.proj_FIP and p.proj_FIP > 0 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_FIP) }}</span><span class="fa-stat-lbl">FIP</span></span>{% endif %}
+                        {% if p.proj_WHIP is not none and p.proj_WHIP == p.proj_WHIP and p.proj_WHIP > 0 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_WHIP) }}</span><span class="fa-stat-lbl">WHIP</span></span>{% endif %}
+                        {% if p.proj_IP is not none and p.proj_IP == p.proj_IP and p.proj_IP > 1 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_IP) }}</span><span class="fa-stat-lbl">IP</span></span>{% endif %}
+                        {% if p.proj_SV is not none and p.proj_SV == p.proj_SV %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SV) }}</span><span class="fa-stat-lbl">SV</span></span>{% endif %}
                       {% else %}
-                        {% if p.proj_HR is not none and p.proj_HR == p.proj_HR %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_HR) }}</span><span class="fa-stat-lbl">HR</span></span>{% endif %}
-                        {% if p.proj_R is not none and p.proj_R == p.proj_R %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_R) }}</span><span class="fa-stat-lbl">R</span></span>{% endif %}
-                        {% if p.proj_RBI is not none and p.proj_RBI == p.proj_RBI %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_RBI) }}</span><span class="fa-stat-lbl">RBI</span></span>{% endif %}
-                        {% if p.proj_SB is not none and p.proj_SB == p.proj_SB %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SB) }}</span><span class="fa-stat-lbl">SB</span></span>{% endif %}
-                        {% if p.proj_AVG is not none and p.proj_AVG == p.proj_AVG %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.3f'|format(p.proj_AVG) }}</span><span class="fa-stat-lbl">AVG</span></span>{% endif %}
+                        {% if p.proj_wOBA is not none and p.proj_wOBA == p.proj_wOBA %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.3f'|format(p.proj_wOBA) }}</span><span class="fa-stat-lbl">wOBA</span></span>{% endif %}
+                        {% if p.proj_ISO is not none and p.proj_ISO == p.proj_ISO %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.3f'|format(p.proj_ISO) }}</span><span class="fa-stat-lbl">ISO</span></span>{% endif %}
+                        {% if p['proj_wRC+'] is not none and p['proj_wRC+'] == p['proj_wRC+'] %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p['proj_wRC+']) }}</span><span class="fa-stat-lbl">wRC+</span></span>{% endif %}
+                        {% if p.proj_AB is not none and p.proj_AB == p.proj_AB %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_AB) }}</span><span class="fa-stat-lbl">AB</span></span>{% endif %}
+                        {% if p.proj_wBsR is not none and p.proj_wBsR == p.proj_wBsR %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.1f'|format(p.proj_wBsR) }}</span><span class="fa-stat-lbl">wBsR</span></span>{% endif %}
                       {% endif %}
                     </div>
                   </div>
@@ -325,17 +325,17 @@
                     </div>
                     <div class="fa-card-stats">
                       {% if is_pitcher %}
-                        {% if p.proj_ERA is not none and p.proj_ERA == p.proj_ERA %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_ERA) }}</span><span class="fa-stat-lbl">ERA</span></span>{% endif %}
-                        {% if p.proj_WHIP is not none and p.proj_WHIP == p.proj_WHIP and p.proj_WHIP > 0 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_WHIP) }}</span><span class="fa-stat-lbl">WHIP</span></span>{% endif %}
-                        {% if p.proj_SV is not none and p.proj_SV == p.proj_SV %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SV) }}</span><span class="fa-stat-lbl">SV</span></span>{% endif %}
-                        {% if p.proj_IP is not none and p.proj_IP == p.proj_IP and p.proj_IP > 1 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_IP) }}</span><span class="fa-stat-lbl">IP</span></span>{% endif %}
                         {% if p['proj_K-BB%'] is not none and p['proj_K-BB%'] == p['proj_K-BB%'] %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.1f'|format(p['proj_K-BB%'] * 100) }}%</span><span class="fa-stat-lbl">K-BB%</span></span>{% endif %}
+                        {% if p.proj_FIP is not none and p.proj_FIP == p.proj_FIP and p.proj_FIP > 0 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_FIP) }}</span><span class="fa-stat-lbl">FIP</span></span>{% endif %}
+                        {% if p.proj_WHIP is not none and p.proj_WHIP == p.proj_WHIP and p.proj_WHIP > 0 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.2f'|format(p.proj_WHIP) }}</span><span class="fa-stat-lbl">WHIP</span></span>{% endif %}
+                        {% if p.proj_IP is not none and p.proj_IP == p.proj_IP and p.proj_IP > 1 %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_IP) }}</span><span class="fa-stat-lbl">IP</span></span>{% endif %}
+                        {% if p.proj_SV is not none and p.proj_SV == p.proj_SV %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SV) }}</span><span class="fa-stat-lbl">SV</span></span>{% endif %}
                       {% else %}
-                        {% if p.proj_HR is not none and p.proj_HR == p.proj_HR %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_HR) }}</span><span class="fa-stat-lbl">HR</span></span>{% endif %}
-                        {% if p.proj_R is not none and p.proj_R == p.proj_R %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_R) }}</span><span class="fa-stat-lbl">R</span></span>{% endif %}
-                        {% if p.proj_RBI is not none and p.proj_RBI == p.proj_RBI %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_RBI) }}</span><span class="fa-stat-lbl">RBI</span></span>{% endif %}
-                        {% if p.proj_SB is not none and p.proj_SB == p.proj_SB %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_SB) }}</span><span class="fa-stat-lbl">SB</span></span>{% endif %}
-                        {% if p.proj_AVG is not none and p.proj_AVG == p.proj_AVG %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.3f'|format(p.proj_AVG) }}</span><span class="fa-stat-lbl">AVG</span></span>{% endif %}
+                        {% if p.proj_wOBA is not none and p.proj_wOBA == p.proj_wOBA %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.3f'|format(p.proj_wOBA) }}</span><span class="fa-stat-lbl">wOBA</span></span>{% endif %}
+                        {% if p.proj_ISO is not none and p.proj_ISO == p.proj_ISO %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.3f'|format(p.proj_ISO) }}</span><span class="fa-stat-lbl">ISO</span></span>{% endif %}
+                        {% if p['proj_wRC+'] is not none and p['proj_wRC+'] == p['proj_wRC+'] %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p['proj_wRC+']) }}</span><span class="fa-stat-lbl">wRC+</span></span>{% endif %}
+                        {% if p.proj_AB is not none and p.proj_AB == p.proj_AB %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.0f'|format(p.proj_AB) }}</span><span class="fa-stat-lbl">AB</span></span>{% endif %}
+                        {% if p.proj_wBsR is not none and p.proj_wBsR == p.proj_wBsR %}<span class="fa-stat"><span class="fa-stat-val">{{ '%.1f'|format(p.proj_wBsR) }}</span><span class="fa-stat-lbl">wBsR</span></span>{% endif %}
                       {% endif %}
                     </div>
                   </div>
@@ -503,37 +503,33 @@
               {% set is_pitcher = 'P' in ((cmp1.position or '') ~ (cmp2.position or '')) %}
               {% if is_pitcher %}
                 {% set proj_stats = [
-                  ('ERA',   'proj_ERA',   True,  '%.2f'),
-                  ('WHIP',  'proj_WHIP',  True,  '%.2f'),
-                  ('FIP',   'proj_FIP',   True,  '%.2f'),
                   ('K-BB%', 'proj_K-BB%', False, 'pct'),
-                  ('SV',    'proj_SV',    False, '%.0f'),
+                  ('FIP',   'proj_FIP',   True,  '%.2f'),
+                  ('WHIP',  'proj_WHIP',  True,  '%.2f'),
                   ('IP',    'proj_IP',    False, '%.0f'),
+                  ('SV',    'proj_SV',    False, '%.0f'),
                 ] %}
                 {% set curr_stats = [
-                  ('ERA',   'curr_ERA',   True,  '%.2f'),
-                  ('WHIP',  'curr_WHIP',  True,  '%.2f'),
-                  ('FIP',   'curr_FIP',   True,  '%.2f'),
                   ('K-BB%', 'curr_K-BB%', False, 'pct'),
-                  ('SV',    'curr_SV',    False, '%.0f'),
+                  ('FIP',   'curr_FIP',   True,  '%.2f'),
+                  ('WHIP',  'curr_WHIP',  True,  '%.2f'),
                   ('IP',    'curr_IP',    False, '%.0f'),
+                  ('SV',    'curr_SV',    False, '%.0f'),
                 ] %}
               {% else %}
                 {% set proj_stats = [
-                  ('HR',   'proj_HR',   False, '%.0f'),
-                  ('R',    'proj_R',    False, '%.0f'),
-                  ('RBI',  'proj_RBI',  False, '%.0f'),
-                  ('SB',   'proj_SB',   False, '%.0f'),
-                  ('AVG',  'proj_AVG',  False, '%.3f'),
                   ('wOBA', 'proj_wOBA', False, '%.3f'),
+                  ('ISO',  'proj_ISO',  False, '%.3f'),
+                  ('wRC+', 'proj_wRC+', False, '%.0f'),
+                  ('AB',   'proj_AB',   False, '%.0f'),
+                  ('wBsR', 'proj_wBsR', False, '%.1f'),
                 ] %}
                 {% set curr_stats = [
-                  ('HR',   'curr_HR',   False, '%.0f'),
-                  ('R',    'curr_R',    False, '%.0f'),
-                  ('RBI',  'curr_RBI',  False, '%.0f'),
-                  ('SB',   'curr_SB',   False, '%.0f'),
-                  ('AVG',  'curr_AVG',  False, '%.3f'),
                   ('wOBA', 'curr_wOBA', False, '%.3f'),
+                  ('ISO',  'curr_ISO',  False, '%.3f'),
+                  ('wRC+', 'curr_wRC+', False, '%.0f'),
+                  ('AB',   'curr_AB',   False, '%.0f'),
+                  ('wBsR', 'curr_wBsR', False, '%.1f'),
                 ] %}
               {% endif %}
               {# macro-style: render one stat block #}
